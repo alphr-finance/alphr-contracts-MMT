@@ -2,17 +2,22 @@
   "name": "alphr-manual-trade",
   "version": "1.0.0",
   "description": "",
+<<<<<<< HEAD
   "main": "truffle-config.js",
   "private": true,
   "directories": {
     "test": "test"
   },
+=======
+  "main": "index.js",
+>>>>>>> 1f606f4c123c87451c472f33803fe3ed932d4dc1
   "scripts": {
     "node": "hardhat node",
     "deploy": "truffle migrate",
     "test": "hardhat test",
     "build": "hardhat compile",
     "lint:sol": "solhint contracts/**/*.sol",
+<<<<<<< HEAD
     "lint:js": "eslint test/**/*.js migrations/**/*.js",
     "fix:js": "eslint test/**/*.js migrations/**/*.js --fix",
     "fix:sol": "prettier --write 'contracts/**/*.sol'"
@@ -21,6 +26,12 @@
     "*.{js,json,md}": [
       "prettier --write"
     ]
+=======
+    "lint:js": "eslint migrations/**/*.js",
+    "fix:js": "eslint migrations/**/*.js --fix",
+    "fix:sol": "prettier --write 'contracts/**/*.sol'",
+    "coverage": "hardhat coverage"
+>>>>>>> 1f606f4c123c87451c472f33803fe3ed932d4dc1
   },
   "keywords": [],
   "author": "",
@@ -44,6 +55,7 @@
     "eslint": "^7.2.0",
     "eslint-config-airbnb-base": "14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.1",
     "ethereum-waffle": "^3.3.0",
     "ethers": "^5.1.4",
     "hardhat": "^2.2.1",
@@ -65,6 +77,7 @@
     "@typechain/truffle-v5": "^4.0.1",
     "@typechain/web3-v1": "^2.2.0",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
+    "eslint-config-prettier": "^8.3.0",
     "hardhat-typechain": "^0.3.5",
     "husky": "^6.0.0",
     "openzeppelin-solidity": "^4.1.0",
