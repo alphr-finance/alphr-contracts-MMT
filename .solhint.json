@@ -5,7 +5,7 @@
     "avoid-suicide": "error",
     "avoid-sha3": "warn",
     "max-line-length": ["error", 120],
-    "compiler-version": ["warn", "^0.7.0"],
+    "compiler-version": ["warn", "^0.8.4"],
     "prettier/prettier": "error",
     "func-visibility": ["warn", {"ignoreConstructors": false}],
     "ignoreConstructors": true
