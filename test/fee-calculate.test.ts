@@ -1,13 +1,12 @@
 // @ts-ignore
 import { ethers } from 'hardhat';
 import { providers, Signer, utils } from 'ethers';
-import { FeeStorage, ManualTrade } from '../typechain';
+import { FeeStorage, ManualTrade, Erc20Mock } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
-import { Erc20Mock } from "../typechain/ERC20Mock"
 import {deployMockContract, MockContract} from '@ethereum-waffle/mock-contract';
 
-const UNI = require("../../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json")
+const UNI = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json")
 
 describe('ManualTrade :: fee calculations test', () => {
 
@@ -168,7 +167,7 @@ describe('ManualTrade :: fee calculations test', () => {
     let token: Erc20Mock
     
     before("deploy ERC20 mock and mint", async () => {
-      const Erc20Mock = await ethers.getContractFactory("Erc20Mock")
+      const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
       token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as Erc20Mock
       await token.deployed()
       await token.connect(user).mint()
@@ -194,12 +193,12 @@ describe('ManualTrade :: fee calculations test', () => {
     let token, token1: Erc20Mock
     
     before("deploy ERC20 mock and mint", async () => {
-      const Erc20Mock = await ethers.getContractFactory("Erc20Mock")
+      const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
       token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as Erc20Mock
       await token.deployed()
       await token.connect(user).mint()
       
-      const Erc20Mock1 = await ethers.getContractFactory("Erc20Mock")
+      const Erc20Mock1 = await ethers.getContractFactory("ERC20Mock")
       token1 = await Erc20Mock1.connect(deployer).deploy("MockToken", "MT") as Erc20Mock
       await token1.deployed()
       await token1.connect(user).mint()
