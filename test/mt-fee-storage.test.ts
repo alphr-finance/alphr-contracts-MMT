@@ -1,15 +1,13 @@
 import { expect } from 'chai';
 import { ethers } from 'hardhat';
-import { providers, Signer, utils } from 'ethers';
+import { providers, utils } from 'ethers';
 import { ContractReceipt, ContractTransaction } from "ethers"
-import { FeeStorage, ManualTrade } from '../typechain';
+import { FeeStorage, Erc20Mock} from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { deployMockContract, MockContract } from '@ethereum-waffle/mock-contract';
-import { Erc20Mock } from "../typechain/ERC20Mock"
-import { util } from 'prettier';
 
+const UNI = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 
-const UNI = require("../../../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 describe('Fs-storage :: deploy test suite', () => {
     let owner, user, token1, token2, weth: SignerWithAddress;
     let fs: FeeStorage;
@@ -24,7 +22,7 @@ describe('Fs-storage :: deploy test suite', () => {
     });
     
     async function getToken(token:SignerWithAddress) {
-        const Erc20Mock = await ethers.getContractFactory("Erc20Mock")
+        const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
         const  t = await Erc20Mock.connect(token).deploy("MockToken", "MT") as Erc20Mock
         await t.deployed()
         return t
@@ -45,11 +43,9 @@ describe('Fs-storage :: deploy test suite', () => {
         await alphrToken.deployed()
         await alphrToken.connect(owner).mint()
         
-        alphrToken.transfer(fs.address, utils.parseEther('2'), {from: owner.address})
+        alphrToken.connect(owner).transfer(fs.address, utils.parseEther('2'))
     })
 
-
-    
     describe('balance', () => {
         it('check balance of fs', async () => {
             expect(await fs.getBalance()).to.be.eq(utils.parseEther('100'))

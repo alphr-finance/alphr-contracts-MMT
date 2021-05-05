@@ -5,3 +5,6 @@ cache
 artifacts
 typechain
 package-lock.json
+
+# jet brains
+.idea
