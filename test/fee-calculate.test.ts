@@ -1,6 +1,6 @@
 // @ts-ignore
 import { ethers } from 'hardhat';
-import { providers, Signer, utils } from 'ethers';
+import { providers, utils } from 'ethers';
 import { FeeStorage, ManualTrade, Erc20Mock } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
