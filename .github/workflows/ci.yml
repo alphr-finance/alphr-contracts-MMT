@@ -23,9 +23,6 @@ jobs:
             -   name: Lint Solidity
                 run: |
                     yarn lint:sol
-            -   name: Lint JS
-                run: |
-                    yarn lint:js
             -   name: Test
                 run: |
                     yarn test
