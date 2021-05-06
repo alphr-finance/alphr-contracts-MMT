@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "hardhat build",
+    "build": "hardhat compile",
     "test": "hardhat test",
     "lint:sol": "solhint contracts/**/*.sol",
     "fix:sol": "prettier --write 'contracts/**/*.sol'"
