@@ -1,5 +1,6 @@
-import { expect } from 'chai';
+// @ts-ignore
 import { ethers } from 'hardhat';
+import { expect } from 'chai';
 import { providers, utils } from 'ethers';
 import { ContractReceipt, ContractTransaction } from "ethers"
 import { FeeStorage, Erc20Mock} from '../typechain';

@@ -9,13 +9,6 @@ import "./FeeStorage.sol";
 contract ManualTrade is Ownable {
     using SafeMath for uint256;
 
-    event NewManualTrade(
-        address indexed tokenIn,
-        address indexed tokenOut,
-        uint256 amountIn,
-        uint256 amountOut
-    );
-
     uint256 private feeQuota;
     uint256 private feeQuotaDecimals;
 
@@ -27,7 +20,7 @@ contract ManualTrade is Ownable {
         uint256 _feeQuota,
         uint256 _feeQuotaDecimals,
         address _uniswap
-    ) public {
+    ) {
         feeQuota = _feeQuota;
         feeQuotaDecimals = _feeQuotaDecimals;
         feeStorage = FeeStorage(_feeStorage);
@@ -136,16 +129,15 @@ contract ManualTrade is Ownable {
     }
 
     function calculateFee(
-        uint256 feeQuota,
-        uint256 feeQuotaDecimals,
-        uint256 tokenDecimals,
-        uint256 amount
-    ) public view returns (uint256) {
+        uint256 _feeQuota,
+        uint256 _feeQuotaDecimals,
+        uint256 _tokenDecimals,
+        uint256 _amount
+    ) public pure returns (uint256) {
         uint256 feeQuoteNormalized =
-            feeQuota.mul(10**tokenDecimals).div(feeQuotaDecimals);
-
+            _feeQuota.mul(10**_tokenDecimals).div(_feeQuotaDecimals);
         uint256 feeAmount =
-            amount.mul(feeQuoteNormalized).div(10**tokenDecimals);
+            _amount.mul(feeQuoteNormalized).div(10**_tokenDecimals);
         return feeAmount;
     }
 }
