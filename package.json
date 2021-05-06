@@ -1,8 +1,8 @@
 {
-  "name": "alphr-manual-trade",
+  "name": "alphr-contracts-mmt",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "EVM smart contract for manual mirror trading within alphr.finance platform",
+  "license": "GPL-3.0",
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test",
