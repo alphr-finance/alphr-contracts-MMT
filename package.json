@@ -8,11 +8,19 @@
     "deploy": "truffle migrate",
     "test": "hardhat test",
     "build": "hardhat compile",
+
     "lint:sol": "solhint contracts/**/*.sol",
     "lint:js": "eslint migrations/**/*.js",
     "fix:js": "eslint migrations/**/*.js --fix",
-    "fix:sol": "prettier --write 'contracts/**/*.sol'",
-    "coverage": "hardhat coverage"
+    "fix:sol": "prettier --write 'contracts/**/*.sol'"
+  },
+  "lint-staged": {
+    "*.{js,json,md, ts}": [
+      "prettier --write"
+    ]
+  },
+  "eslintConfig": {
+    "extends": "./eslintrc.js"
   },
   "keywords": [],
   "author": "",
@@ -32,6 +40,7 @@
     "@types/node": "^15.0.1",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "babel-eslint": "^10.1.0",
     "chai": "^4.3.4",
     "eslint": "^7.2.0",
     "eslint-config-airbnb-base": "14.2.1",
@@ -61,8 +70,16 @@
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "eslint-config-prettier": "^8.3.0",
     "hardhat-typechain": "^0.3.5",
+    "husky": "^4.0.0",
     "openzeppelin-solidity": "^4.1.0",
     "ts-generator": "^0.1.1",
     "typechain": "^3.0.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn lint:js && yarn lint:sol",
+      "pre-push": "yarn test",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
   }
 }
