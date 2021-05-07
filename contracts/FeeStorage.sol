@@ -13,6 +13,40 @@ contract FeeStorage is Ownable {
     address private uniswapRouterAddress;
     EnumerableSet.AddressSet private tokens;
 
+    event SendETH(uint256, address, bytes);
+
+    function swapToETHAndSend(address payable _to) external onlyOwner {
+        for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
+            address token = EnumerableSet.at(tokens, index - 1);
+            uint256 balance = IERC20(token).balanceOf(address(this));
+            IERC20(token).approve(uniswapRouterAddress, balance);
+
+            address[] memory path = new address[](2);
+            path[0] = token;
+            path[1] = IUniswapV2Router02(uniswapRouterAddress).WETH();
+
+            uint256[] memory amounts =
+                IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(
+                    balance,
+                    path
+                );
+
+            uint256 amountOutMin = amounts[1];
+            uint256[] memory ethAmounts =
+                IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
+                    balance,
+                    amountOutMin,
+                    path,
+                    address(this),
+                    block.timestamp
+                );
+
+            (bool sent, bytes memory data) = _to.call{value: ethAmounts[1]}("");
+            require(sent, "Failed to send Ether");
+            emit SendETH(ethAmounts[1], _to, data);
+        }
+    }
+
     function swapTokensForAlphrAndBurn() external onlyOwner {
         for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
             address token = EnumerableSet.at(tokens, index - 1);
