@@ -1,13 +1,9 @@
 // @ts-ignore
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
-import { BigNumber, providers, utils } from 'ethers';
+import { providers, utils } from 'ethers';
 import { ContractReceipt, ContractTransaction } from "ethers"
-<<<<<<< HEAD
-import { FeeStorage, ERC20Mock} from '../typechain';
-=======
-import { FeeStorage, Erc20Mock } from '../typechain';
->>>>>>> ab5b742... feat: add test
+import { FeeStorage, ERC20Mock } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { deployMockContract, MockContract } from '@ethereum-waffle/mock-contract';
 
@@ -27,12 +23,8 @@ describe('Fs-storage :: deploy test suite', () => {
     });
 
     async function getToken(token: SignerWithAddress) {
-        const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
-<<<<<<< HEAD
-        const  t = await Erc20Mock.connect(token).deploy("MockToken", "MT") as ERC20Mock
-=======
-        const t = await Erc20Mock.connect(token).deploy("MockToken", "MT") as Erc20Mock
->>>>>>> ab5b742... feat: add test
+        const ERC20Mock = await ethers.getContractFactory("ERC20Mock")
+        const t = await ERC20Mock.connect(token).deploy("MockToken", "MT") as ERC20Mock
         await t.deployed()
         return t
     }
@@ -62,11 +54,7 @@ describe('Fs-storage :: deploy test suite', () => {
     });
 
     describe('check token number in list', () => {
-<<<<<<< HEAD
-        let tokenA : ERC20Mock
-=======
-        let tokenA: Erc20Mock
->>>>>>> ab5b742... feat: add test
+        let tokenA: ERC20Mock
         before('deploy and mint token', async () => {
             tokenA = await getToken(token1)
         });
