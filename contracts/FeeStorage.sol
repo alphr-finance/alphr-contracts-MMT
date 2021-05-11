@@ -13,7 +13,7 @@ contract FeeStorage is Ownable {
     address private uniswapRouterAddress;
     EnumerableSet.AddressSet private tokens;
 
-    event SendETH(uint256, address, bytes);
+    event SendETH(uint256, address);
 
     function swapToETHAndSend(address payable _to) external onlyOwner {
         for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
@@ -32,36 +32,7 @@ contract FeeStorage is Ownable {
                 );
 
             uint256 amountOutMin = amounts[1];
-            uint256[] memory ethAmounts =
-                IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
-                    balance,
-                    amountOutMin,
-                    path,
-                    address(this),
-                    block.timestamp
-                );
-
-            (bool sent, bytes memory data) = _to.call{value: ethAmounts[1]}("");
-            require(sent, "Failed to send Ether");
-            emit SendETH(ethAmounts[1], _to, data);
-        }
-    }
-
-    function swapTokensForAlphrAndBurn() external onlyOwner {
-        for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
-            address token = EnumerableSet.at(tokens, index - 1);
-            uint256 balance = IERC20(token).balanceOf(address(this));
-            IERC20(token).approve(uniswapRouterAddress, balance);
-            address[] memory path = new address[](2);
-            path[0] = token;
-            path[1] = alphrTokenAddress;
-            uint256[] memory amounts =
-                IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(
-                    balance,
-                    path
-                );
-            uint256 amountOutMin = amounts[1];
-            IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForTokens(
+            IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
                 balance,
                 amountOutMin,
                 path,
@@ -70,9 +41,12 @@ contract FeeStorage is Ownable {
             );
         }
 
-        uint256 alphrBalance =
-            IERC20(alphrTokenAddress).balanceOf(address(this));
-        ERC20Burnable(alphrTokenAddress).burn(alphrBalance);
+        _to.transfer(address(this).balance);
+        emit SendETH(address(this).balance, _to);
+    }
+
+    function getBalanceOf(address token) public view returns (uint256) {
+        return IERC20(token).balanceOf(address(this));
     }
 
     function swapETHForAlphrAndBurn() external onlyOwner {}

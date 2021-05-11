@@ -14,7 +14,7 @@ const daiAddress = "0x6b175474e89094c44da98b954eedeac495271d0f"
 const usdtAddress = "0xdac17f958d2ee523a2206206994597c13d831ec7"
 const wethAddress = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 
-describe('Fs-storage :: deploy test suite', () => {
+describe('Fs-storage :: swap and send test suite', () => {
     let owner, user, receiptor: SignerWithAddress;
     let fs: FeeStorage;
     let alphrToken: Erc20Mock;
@@ -90,14 +90,14 @@ describe('Fs-storage :: deploy test suite', () => {
         it('mt-swapToETHAndSend', async () => {
             let prov = providers.getDefaultProvider()
 
-            expect(await fs.getBalanceOf(wethAddress)).to.be.eq(BigNumber.from("10000000000000000000000"))
+            expect(await fs.getBalance()).to.be.eq(BigNumber.from("10000000000000000000000"))
             console.log("Old balance: ", ethers.utils.formatEther(await prov.getBalance(receiptor.address)))
 
             tx = await fs.connect(owner).swapToETHAndSend(utils.getAddress(receiptor.address));
 
             console.log("New balance: ", ethers.utils.formatEther(await prov.getBalance(receiptor.address)))
 
-            expect(await fs.getBalanceOf(wethAddress)).to.not.be.eq(BigNumber.from("10000000000000000000000"))
+            expect(await fs.getBalance()).to.not.be.eq(BigNumber.from("10000000000000000000000"))
         });
     });
 });
