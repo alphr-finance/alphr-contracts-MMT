@@ -15,7 +15,7 @@ contract FeeStorage is Ownable {
 
     event SendETH(uint256, address);
 
-    function swapToETHAndSend(address payable _to) external onlyOwner {
+    function swapToETHAndSend(address payable _to) external payable onlyOwner {
         for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
             address token = EnumerableSet.at(tokens, index - 1);
             uint256 balance = IERC20(token).balanceOf(address(this));
