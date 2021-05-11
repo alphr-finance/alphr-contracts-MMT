@@ -1,7 +1,7 @@
 // @ts-ignore
 import { ethers } from 'hardhat';
 import { providers, utils } from 'ethers';
-import { FeeStorage, ManualTrade, Erc20Mock } from '../typechain';
+import { FeeStorage, ManualTrade, ERC20Mock } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
 import {deployMockContract, MockContract} from '@ethereum-waffle/mock-contract';
@@ -164,11 +164,11 @@ describe('ManualTrade :: fee calculations test', () => {
   });
 
   describe('mt-test swap ERC20 for ETH token', async () => {
-    let token: Erc20Mock
+    let token: ERC20Mock
     
     before("deploy ERC20 mock and mint", async () => {
       const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
-      token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as Erc20Mock
+      token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as ERC20Mock
       await token.deployed()
       await token.connect(user).mint()
     })
@@ -190,16 +190,16 @@ describe('ManualTrade :: fee calculations test', () => {
   });
 
   describe('mt-test swap ERC20 for tokens', async () => {
-    let token, token1: Erc20Mock
+    let token, token1: ERC20Mock
     
     before("deploy ERC20 mock and mint", async () => {
       const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
-      token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as Erc20Mock
+      token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as ERC20Mock
       await token.deployed()
       await token.connect(user).mint()
       
       const Erc20Mock1 = await ethers.getContractFactory("ERC20Mock")
-      token1 = await Erc20Mock1.connect(deployer).deploy("MockToken", "MT") as Erc20Mock
+      token1 = await Erc20Mock1.connect(deployer).deploy("MockToken", "MT") as ERC20Mock
       await token1.deployed()
       await token1.connect(user).mint()
     })
