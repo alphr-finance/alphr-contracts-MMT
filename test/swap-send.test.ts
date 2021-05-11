@@ -46,7 +46,7 @@ describe('Fs-storage :: swap and send test suite', () => {
         await fs.addTokenToBalanceList(usdtAddress)
         const usdt = await ethers.getContractAt("IERC20", usdtAddress) as IERC20
 
-        const usdtHolderAddress = "	0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503"
+        const usdtHolderAddress = "0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503"
         await network.provider.send("hardhat_impersonateAccount", [usdtHolderAddress])
         const usdtHolder = await ethers.provider.getSigner(usdtHolderAddress)
         await usdt.connect(usdtHolder).transfer(fs.address, BigNumber.from("15000000"))
@@ -56,7 +56,7 @@ describe('Fs-storage :: swap and send test suite', () => {
         await fs.addTokenToBalanceList(wethAddress)
         const weth = await ethers.getContractAt("IERC20", wethAddress) as IERC20
 
-        const wethHolderAddress = "	0x0f4ee9631f4be0a63756515141281a3e2b293bbe"
+        const wethHolderAddress = "0x0f4ee9631f4be0a63756515141281a3e2b293bbe"
         await network.provider.send("hardhat_impersonateAccount", [wethHolderAddress])
         const wethHolder = await ethers.provider.getSigner(wethHolderAddress)
         await weth.connect(wethHolder).transfer(fs.address, BigNumber.from("15000000000000000000"))
