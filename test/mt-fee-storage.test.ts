@@ -1,7 +1,7 @@
 // @ts-ignore
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
-import { providers, utils } from 'ethers';
+import { BigNumber, providers, utils } from 'ethers';
 import { ContractReceipt, ContractTransaction } from "ethers"
 <<<<<<< HEAD
 import { FeeStorage, ERC20Mock} from '../typechain';
@@ -120,49 +120,6 @@ describe('Fs-storage :: deploy test suite', () => {
             const expectedEventName = fs.interface.events["Transfer(address,address, uint256)"].name
             const actualEventName = txr.events[0].event
             expect(actualEventName).to.be.equal(expectedEventName);
-        });
-    });
-
-    describe('swap to ETH and send', () => {
-        let tokenA, tokenB: Erc20Mock
-        before('deploy and mint tokens', async () => {
-            tokenA = await getToken(token1)
-            tokenA.mint()
-
-            tokenB = await getToken(token2)
-            tokenB.mint()
-
-            await tokenA.transfer(fs.address, utils.parseEther('2'))
-            await tokenB.transfer(fs.address, utils.parseEther('5'))
-        });
-
-        before('set uniswap router address', async () => {
-            uniswapMock = await deployMockContract(owner, UNI.abi);
-            uniswapMock.mock.WETH.returns(utils.getAddress('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'));
-            uniswapMock.mock.getAmountsOut.returns([0, utils.parseEther('2')]);
-            uniswapMock.mock.swapExactTokensForETH.returns([0, utils.parseEther('2')]);
-            uniswapMock.mock.swapExactTokensForTokens.returns([]);
-            await fs.setUniswapRouterAddress(uniswapMock.address);
-            await fs.setAlphrTokenAddress(alphrToken.address);
-        })
-
-        it('mt-swapToETHAndSend', async () => {
-            await fs.addTokenToBalanceList(tokenA.address);
-            await fs.addTokenToBalanceList(tokenB.address);
-
-            let prov = providers.getDefaultProvider()
-            let addressTo = '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266';
-
-            console.log("Old balance: ", ethers.utils.formatEther(await prov.getBalance(addressTo)))
-            tx = await fs.swapToETHAndSend(utils.getAddress(addressTo));
-            txr = await tx.wait();
-            console.log("New balance: ", ethers.utils.formatEther(await prov.getBalance(addressTo)))
-
-            console.log("Send events emitted: ")
-            txr.events.forEach(e => {
-                if (e.eventSignature == "SendETH(uint256,address,bytes)")
-                    console.log(e.args)
-            })
         });
     });
 });
