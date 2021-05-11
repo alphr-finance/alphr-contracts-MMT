@@ -82,15 +82,15 @@ describe('Fs-storage :: swap and send test suite', () => {
     });
 
     describe('balance', () => {
-        it('check balance of DAI in fs', async () => {
+        it.skip('check balance of DAI in fs', async () => {
             expect(await fs.getBalanceOf(daiAddress)).to.be.eq(BigNumber.from("15000000000000000000"))
         });
 
-        it('check balance of USDT in fs', async () => {
+        it.skip('check balance of USDT in fs', async () => {
             expect(await fs.getBalanceOf(usdtAddress)).to.be.eq(BigNumber.from("15000000"))
         });
 
-        it('check balance of WETH in fs', async () => {
+        it.skip('check balance of WETH in fs', async () => {
             expect(await fs.getBalanceOf(wethAddress)).to.be.eq(BigNumber.from("15000000000000000000"))
         });
     });
