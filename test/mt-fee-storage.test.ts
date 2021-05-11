@@ -3,7 +3,7 @@ import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { providers, utils } from 'ethers';
 import { ContractReceipt, ContractTransaction } from "ethers"
-import { FeeStorage, Erc20Mock} from '../typechain';
+import { FeeStorage, ERC20Mock} from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { deployMockContract, MockContract } from '@ethereum-waffle/mock-contract';
 
@@ -13,7 +13,7 @@ describe('Fs-storage :: deploy test suite', () => {
     let owner, user, token1, token2, weth: SignerWithAddress;
     let fs: FeeStorage;
     let fsDeployTxr: providers.TransactionReceipt;
-    let alphrToken: Erc20Mock;
+    let alphrToken: ERC20Mock;
     let uniswapMock: MockContract;
     let tx: ContractTransaction
     let txr: ContractReceipt
@@ -24,7 +24,7 @@ describe('Fs-storage :: deploy test suite', () => {
     
     async function getToken(token:SignerWithAddress) {
         const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
-        const  t = await Erc20Mock.connect(token).deploy("MockToken", "MT") as Erc20Mock
+        const  t = await Erc20Mock.connect(token).deploy("MockToken", "MT") as ERC20Mock
         await t.deployed()
         return t
     }
@@ -40,7 +40,7 @@ describe('Fs-storage :: deploy test suite', () => {
     
     before("deploy alphrToken mock and mint", async () => {
         const ERC20Mock = await ethers.getContractFactory("ERC20Mock")
-        alphrToken = await ERC20Mock.connect(owner).deploy("MockToken", "MT") as Erc20Mock
+        alphrToken = await ERC20Mock.connect(owner).deploy("MockToken", "MT") as ERC20Mock
         await alphrToken.deployed()
         await alphrToken.connect(owner).mint()
         
@@ -54,7 +54,7 @@ describe('Fs-storage :: deploy test suite', () => {
     });
 
     describe('check token number in list', () => {
-        let tokenA : Erc20Mock
+        let tokenA : ERC20Mock
         before('deploy and mint token', async () => {
             tokenA = await getToken(token1)
         });
@@ -74,7 +74,7 @@ describe('Fs-storage :: deploy test suite', () => {
     });
     
     describe('swap tokens and burn', () => {
-        let tokenA, tokenB: Erc20Mock
+        let tokenA, tokenB: ERC20Mock
         before('deploy and mint tokens', async () => {
             tokenA = await getToken(token1)
             tokenA.mint()
