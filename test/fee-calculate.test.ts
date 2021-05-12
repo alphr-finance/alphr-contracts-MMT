@@ -1,10 +1,10 @@
 // @ts-ignore
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import { providers, utils } from 'ethers';
 import { FeeStorage, ManualTrade, ERC20Mock } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
-import {deployMockContract, MockContract} from '@ethereum-waffle/mock-contract';
+import { deployMockContract, MockContract } from '@ethereum-waffle/mock-contract';
 
 const UNI = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json")
 
@@ -22,7 +22,7 @@ describe('ManualTrade :: fee calculations test', () => {
 
   let fs: FeeStorage;
   let fsDeployTxr: providers.TransactionReceipt;
-  let uniswapMock : MockContract
+  let uniswapMock: MockContract
 
   before('deploy fee storage', async () => {
     const FeeStorage = await ethers.getContractFactory('FeeStorage');
@@ -165,39 +165,39 @@ describe('ManualTrade :: fee calculations test', () => {
 
   describe('mt-test swap ERC20 for ETH token', async () => {
     let token: ERC20Mock
-    
+
     before("deploy ERC20 mock and mint", async () => {
       const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
       token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as ERC20Mock
       await token.deployed()
       await token.connect(user).mint()
     })
-    
+
     it('mt-test swapExactTokensForETH', async () => {
       const actualFeeAmount = await mt.calculateFee(
-      feeQuota, feeQuotaDecimals,
-      WETHDecimals, utils.parseEther('2'));
-      
+        feeQuota, feeQuotaDecimals,
+        WETHDecimals, utils.parseEther('2'));
+
       uniswapMock.mock.swapExactTokensForETH.returns([])
       await token.connect(user).approve(mt.address, utils.parseEther('2'))
       await mt.connect(user).swapExactTokensForETH(
         utils.parseEther('2'),
         utils.parseEther('4'),
         [token.address, "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"])
-      
+
       expect(await (await token.balanceOf(fs.address)).toString()).to.be.eq(actualFeeAmount.toString())
     })
   });
 
   describe('mt-test swap ERC20 for tokens', async () => {
     let token, token1: ERC20Mock
-    
+
     before("deploy ERC20 mock and mint", async () => {
       const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
       token = await Erc20Mock.connect(deployer).deploy("MockToken", "MT") as ERC20Mock
       await token.deployed()
       await token.connect(user).mint()
-      
+
       const Erc20Mock1 = await ethers.getContractFactory("ERC20Mock")
       token1 = await Erc20Mock1.connect(deployer).deploy("MockToken", "MT") as ERC20Mock
       await token1.deployed()
@@ -206,18 +206,29 @@ describe('ManualTrade :: fee calculations test', () => {
 
     it('mt-test swapExactTokensForETH', async () => {
       const actualFeeAmount = await mt.calculateFee(
-      feeQuota, feeQuotaDecimals,
-      WETHDecimals, utils.parseEther('2'));
-      
+        feeQuota, feeQuotaDecimals,
+        WETHDecimals, utils.parseEther('2'));
+
       uniswapMock.mock.swapExactTokensForTokens.returns([])
       await token.connect(user).approve(mt.address, utils.parseEther('2'))
       await mt.connect(user).swapExactTokensForTokens(
         utils.parseEther('2'),
         utils.parseEther('4'),
         [token.address, token1.address])
-      
+
       expect(await (await token.balanceOf(fs.address)).toString()).to.be.eq(actualFeeAmount.toString())
     })
   });
-  
+
+  after('reset node fork', async () => {
+    await network.provider.request({
+      method: "hardhat_reset",
+      params: [{
+        forking: {
+          jsonRpcUrl: "https://eth-mainnet.alchemyapi.io/v2/iHddcEw1BVe03s2BXSQx_r_BTDE-jDxB",
+          blockNumber: 12419631
+        }
+      }]
+    });
+  });
 });

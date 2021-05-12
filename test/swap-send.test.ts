@@ -1,15 +1,11 @@
 // @ts-ignore
 import { ethers, network } from 'hardhat';
 import { expect } from 'chai';
-import { BigNumber, providers, utils } from 'ethers';
-import { ContractReceipt, ContractTransaction } from "ethers"
-import { FeeStorage, ERC20Mock } from '../typechain';
+import { utils } from 'ethers';
+import { FeeStorage } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { deployMockContract, MockContract } from '@ethereum-waffle/mock-contract';
 import { IERC20 } from "../typechain/IERC20";
 import { UNISWAP_ROUTER_V2 } from "../constants/uniswap";
-
-const UNI = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 
 const daiAddress = "0x6b175474e89094c44da98b954eedeac495271d0f"
 const daiDecimals = 18
@@ -24,15 +20,11 @@ const defaultRecepientBalance = "10000"
 const etherToPayForTx = "100"
 
 describe('Fs-storage :: swap and send test suite', () => {
-    let owner, user, receipient, token1: SignerWithAddress;
+    let owner, user, receipient: SignerWithAddress;
     let fs: FeeStorage;
-    let alphrToken: ERC20Mock;
-    let uniswapMock: MockContract;
-    let tx: ContractTransaction
-    let txr: ContractReceipt
 
     before('init signers', async () => {
-        [owner, user, token1, receipient] = await ethers.getSigners();
+        [owner, user, receipient] = await ethers.getSigners();
     });
 
     before('deploy fee storage', async () => {
@@ -79,12 +71,10 @@ describe('Fs-storage :: swap and send test suite', () => {
     describe('swap to ETH and send', async () => {
         it('swapToETHAndSend', async () => {
             expect(await ethers.provider.getBalance(receipient.address)).to.be.eq(utils.parseEther(defaultRecepientBalance))
-            console.log("Old balance: ", utils.formatEther(await ethers.provider.getBalance(receipient.address)))
 
             await fs.connect(owner).swapToETHAndSend(receipient.address);
 
             let expectedBalance = utils.parseEther("10000.151642693837014965");
-            console.log("New balance: ", utils.formatEther(await ethers.provider.getBalance(receipient.address)))
             expect(await ethers.provider.getBalance(receipient.address)).to.be.eq(expectedBalance)
 
         });

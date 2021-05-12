@@ -1,5 +1,5 @@
 // @ts-ignore
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import { ManualTrade, FeeStorage } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { expect } from 'chai';
@@ -47,4 +47,16 @@ describe('ManualTrade :: deploy test suite', () => {
 
   it('Manual trade contract OK deploy', async () =>
     expect(mtDeployTxr.status).to.be.eq(TX_RECEIPT_OK));
+
+  after('reset node fork', async () => {
+    await network.provider.request({
+      method: "hardhat_reset",
+      params: [{
+        forking: {
+          jsonRpcUrl: "https://eth-mainnet.alchemyapi.io/v2/iHddcEw1BVe03s2BXSQx_r_BTDE-jDxB",
+          blockNumber: 12419631
+        }
+      }]
+    });
+  });
 });
