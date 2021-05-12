@@ -1,5 +1,5 @@
 // @ts-ignore
-import { ethers } from 'hardhat';
+import { ethers, network } from 'hardhat';
 import { expect } from 'chai';
 import { providers, utils } from 'ethers';
 import { ContractReceipt, ContractTransaction } from "ethers"
@@ -23,8 +23,8 @@ describe('Fs-storage :: deploy test suite', () => {
     });
 
     async function getToken(token: SignerWithAddress) {
-        const ERC20Mock = await ethers.getContractFactory("ERC20Mock")
-        const t = await ERC20Mock.connect(token).deploy("MockToken", "MT") as ERC20Mock
+        const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
+        const t = await Erc20Mock.connect(token).deploy("MockToken", "MT") as ERC20Mock
         await t.deployed()
         return t
     }
@@ -60,8 +60,8 @@ describe('Fs-storage :: deploy test suite', () => {
         });
 
         it('add token', async () => {
-            fs.addTokenToBalanceList(tokenA.address)
-            expect(await fs.getNumberOfTokens()).to.be.eq('1')
+            await fs.connect(owner).addTokenToBalanceList(tokenA.address)
+            expect(await fs.connect(owner).getNumberOfTokens()).to.be.eq('1')
         });
 
         it('add token', async () => {
@@ -77,10 +77,10 @@ describe('Fs-storage :: deploy test suite', () => {
         let tokenA, tokenB: ERC20Mock
         before('deploy and mint tokens', async () => {
             tokenA = await getToken(token1)
-            tokenA.mint()
+            await tokenA.mint()
 
             tokenB = await getToken(token2)
-            tokenB.mint()
+            await tokenB.mint()
 
             tokenA.transfer(fs.address, utils.parseEther('2'))
             tokenB.transfer(fs.address, utils.parseEther('5'))
@@ -110,5 +110,16 @@ describe('Fs-storage :: deploy test suite', () => {
             expect(actualEventName).to.be.equal(expectedEventName);
         });
     });
-});
 
+    after('reset node fork', async () => {
+        await network.provider.request({
+            method: "hardhat_reset",
+            params: [{
+                forking: {
+                    jsonRpcUrl: "https://eth-mainnet.alchemyapi.io/v2/iHddcEw1BVe03s2BXSQx_r_BTDE-jDxB",
+                    blockNumber: 12419631
+                }
+            }]
+        });
+    });
+});
