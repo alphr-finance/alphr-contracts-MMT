@@ -15,10 +15,6 @@ const daiAddress = "0x6b175474e89094c44da98b954eedeac495271d0f"
 const daiDecimals = 18
 const daiHolderAddress = "0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503"
 
-const usdtAddress = "0xdac17f958d2ee523a2206206994597c13d831ec7"
-const usdtDecimals = 6
-const usdtHolderAddress = "0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503"
-
 const uniAddress = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
 const uniDecimals = 18
 const uniHolderAddress = "0x47173b170c64d16393a52e6c480b3ad8c302ba1e"
@@ -58,18 +54,6 @@ describe('Fs-storage :: swap and send test suite', () => {
         await dai.connect(daiHolder).transfer(fs.address, ethers.utils.parseUnits(tokenAmout, daiDecimals))
     });
 
-    before('send 15 USDT to fee storage', async () => {
-        await fs.connect(owner).addTokenToBalanceList(usdtAddress)
-        const usdt = await ethers.getContractAt("IERC20", usdtAddress) as IERC20
-
-        await network.provider.send("hardhat_impersonateAccount", [usdtHolderAddress])
-        const usdtHolder = await ethers.provider.getSigner(usdtHolderAddress)
-
-        await owner.sendTransaction({ to: usdtHolderAddress, value: utils.parseEther(etherToPayForTx) })
-
-        await usdt.connect(usdtHolder).transfer(fs.address, ethers.utils.parseUnits(tokenAmout, usdtDecimals))
-    });
-
     before('send 15 UNI to fee storage', async () => {
         await fs.connect(owner).addTokenToBalanceList(uniAddress)
         const uni = await ethers.getContractAt("IERC20", uniAddress) as IERC20
@@ -87,10 +71,6 @@ describe('Fs-storage :: swap and send test suite', () => {
             expect(await fs.getBalanceOf(daiAddress)).to.be.eq(ethers.utils.parseUnits(tokenAmout, daiDecimals))
         });
 
-        it('check balance of USDT in fs', async () => {
-            expect(await fs.getBalanceOf(usdtAddress)).to.be.eq(ethers.utils.parseUnits(tokenAmout, usdtDecimals))
-        });
-
         it('check balance of UNI in fs', async () => {
             expect(await fs.getBalanceOf(uniAddress)).to.be.eq(ethers.utils.parseUnits(tokenAmout, uniDecimals))
         });
@@ -103,12 +83,26 @@ describe('Fs-storage :: swap and send test suite', () => {
 
             await fs.connect(owner).swapToETHAndSend(receipient.address);
 
+            let expectedBalance = utils.parseEther("10000.151642693837014965");
             console.log("New balance: ", utils.formatEther(await ethers.provider.getBalance(receipient.address)))
-            expect(await ethers.provider.getBalance(receipient.address)).to.not.be.eq(utils.parseEther(defaultRecepientBalance))
+            expect(await ethers.provider.getBalance(receipient.address)).to.be.eq(expectedBalance)
+
         });
 
         it('swapToETHAndSend from another signer', async () => {
             await expect(fs.connect(user).swapToETHAndSend(receipient.address)).to.be.revertedWith('revert Ownable: caller is not the owner')
+        });
+    });
+
+    after('reset node fork', async () => {
+        await network.provider.request({
+            method: "hardhat_reset",
+            params: [{
+                forking: {
+                    jsonRpcUrl: "https://eth-mainnet.alchemyapi.io/v2/iHddcEw1BVe03s2BXSQx_r_BTDE-jDxB",
+                    blockNumber: 12419631
+                }
+            }]
         });
     });
 });
