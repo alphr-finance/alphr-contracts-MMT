@@ -7,6 +7,7 @@ import { FeeStorage, ERC20Mock } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { deployMockContract, MockContract } from '@ethereum-waffle/mock-contract';
 import { IERC20 } from "../typechain/IERC20";
+import {UNISWAP_ROUTER_V2} from "../constants/uniswap";
 
 const UNI = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json");
 
@@ -22,13 +23,6 @@ describe('Fs-storage :: swap and send test suite', () => {
     let tx: ContractTransaction
     let txr: ContractReceipt
 
-    async function getToken(token: SignerWithAddress) {
-        const Erc20Mock = await ethers.getContractFactory("ERC20Mock")
-        const t = await Erc20Mock.connect(token).deploy("MockToken", "MT") as ERC20Mock
-        await t.deployed()
-        return t
-    }
-
     before('init signers', async () => {
         [owner, user, token1, receipient] = await ethers.getSigners();
     });
@@ -37,6 +31,7 @@ describe('Fs-storage :: swap and send test suite', () => {
         const FeeStorage = await ethers.getContractFactory('FeeStorage');
         fs = await FeeStorage.connect(owner).deploy() as FeeStorage;
         await fs.deployed();
+        await fs.connect(owner).setUniswapRouterAddress(UNISWAP_ROUTER_V2)
     });
 
     before('send 15 DAI to fee storage', async () => {
@@ -50,7 +45,7 @@ describe('Fs-storage :: swap and send test suite', () => {
 
         await owner.sendTransaction({ to: daiHolderAddress, value: utils.parseEther('100') })
 
-        await dai.connect(daiHolder).transfer(fs.address, BigNumber.from("15000000000000000000"))
+        await dai.connect(daiHolder).transfer(fs.address, ethers.utils.parseUnits('15', 18))
     });
 
     before('send 15 USDT to fee storage', async () => {
@@ -64,7 +59,7 @@ describe('Fs-storage :: swap and send test suite', () => {
 
         await owner.sendTransaction({ to: usdtHolderAddress, value: utils.parseEther('100') })
 
-        await usdt.connect(usdtHolder).transfer(fs.address, BigNumber.from("15000000"))
+        await usdt.connect(usdtHolder).transfer(fs.address, ethers.utils.parseUnits('15', 6))
     });
 
     before('send 15 WETH to fee storage', async () => {
@@ -78,43 +73,32 @@ describe('Fs-storage :: swap and send test suite', () => {
 
         await owner.sendTransaction({ to: wethHolderAddress, value: utils.parseEther('100') })
 
-        await weth.connect(wethHolder).transfer(fs.address, BigNumber.from("15000000000000000000"))
+        await weth.connect(wethHolder).transfer(fs.address, ethers.utils.parseUnits('15', 18))
     });
 
-    describe('balance', () => {
-        it.skip('check balance of DAI in fs', async () => {
-            expect(await fs.getBalanceOf(daiAddress)).to.be.eq(BigNumber.from("15000000000000000000"))
+    describe('balance', async () => {
+        it('check balance of DAI in fs', async () => {
+            expect(await fs.getBalanceOf(daiAddress)).to.be.eq(ethers.utils.parseUnits('15', 18))
         });
 
-        it.skip('check balance of USDT in fs', async () => {
-            expect(await fs.getBalanceOf(usdtAddress)).to.be.eq(BigNumber.from("15000000"))
+        it('check balance of USDT in fs', async () => {
+            expect(await fs.getBalanceOf(usdtAddress)).to.be.eq(ethers.utils.parseUnits('15', 6))
         });
 
-        it.skip('check balance of WETH in fs', async () => {
-            expect(await fs.getBalanceOf(wethAddress)).to.be.eq(BigNumber.from("15000000000000000000"))
+        it('check balance of WETH in fs', async () => {
+            expect(await fs.getBalanceOf(wethAddress)).to.be.eq(ethers.utils.parseUnits('15', 18))
         });
     });
 
-    describe('swap to ETH and send', () => {
-        before('set uniswap router address', async () => {
-            uniswapMock = await deployMockContract(owner, UNI.abi);
-            uniswapMock.mock.WETH.returns(utils.getAddress('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'));
-            uniswapMock.mock.getAmountsOut.returns([0, utils.parseEther('2')]);
-            uniswapMock.mock.swapExactTokensForETH.returns([]);
-            uniswapMock.mock.swapExactTokensForTokens.returns([]);
-            await fs.setUniswapRouterAddress(uniswapMock.address);
-        })
-
-        it.skip('swapToETHAndSend', async () => {
-            let prov = providers.getDefaultProvider("http://127.0.0.1:8545/")
-
-            expect(await prov.getBalance(receipient.address)).to.be.eq(BigNumber.from("10000000000000000000000"))
-            console.log("Old balance: ", utils.formatEther(await prov.getBalance(receipient.address)))
+    describe('swap to ETH and send', async () => {
+        it('swapToETHAndSend', async () => {
+            expect(await ethers.provider.getBalance(receipient.address)).to.be.eq(BigNumber.from("10000000000000000000000"))
+            console.log("Old balance: ", utils.formatEther(await   ethers.provider.getBalance(receipient.address)))
 
             await fs.connect(owner).swapToETHAndSend(receipient.address);
 
-            console.log("New balance: ", utils.formatEther(await prov.getBalance(receipient.address)))
-            expect(await prov.getBalance(receipient.address)).to.not.be.eq(BigNumber.from("10000000000000000000000"))
+            console.log("New balance: ", utils.formatEther(await   ethers.provider.getBalance(receipient.address)))
+            expect(await   ethers.provider.getBalance(receipient.address)).to.not.be.eq(BigNumber.from("10000000000000000000000"))
         });
 
         it('swapToETHAndSend from another signer', async () => {
