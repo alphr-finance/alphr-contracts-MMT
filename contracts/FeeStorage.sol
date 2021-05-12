@@ -19,6 +19,8 @@ contract FeeStorage is Ownable {
         for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
             address token = EnumerableSet.at(tokens, index - 1);
             uint256 balance = IERC20(token).balanceOf(address(this));
+
+            // USDT approve doesn’t comply with the ERC20 standard
             IERC20(token).approve(uniswapRouterAddress, balance);
 
             address[] memory path = new address[](2);
