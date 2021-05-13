@@ -46,6 +46,7 @@ module.exports = {
                 allow: [],
             },
         ],
+        'jest/valid-expect': 'off'
     },
     ignorePatterns: ['/dist/*', '/coverage/*', '/lib/*'],
 };
