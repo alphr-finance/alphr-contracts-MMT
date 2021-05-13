@@ -47,10 +47,6 @@ contract FeeStorage is Ownable {
         emit SendETH(address(this).balance, _to);
     }
 
-    function getBalanceOf(address token) public view returns (uint256) {
-        return IERC20(token).balanceOf(address(this));
-    }
-
     function swapETHForAlphrAndBurn() external onlyOwner {}
 
     // Function to receive Ether. msg.data must be empty
