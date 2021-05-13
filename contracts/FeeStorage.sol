@@ -5,10 +5,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract FeeStorage is Ownable {
+  using SafeERC20 for IERC20;
+
   address private alphrTokenAddress;
   address private uniswapRouterAddress;
   EnumerableSet.AddressSet private tokens;
@@ -21,7 +24,7 @@ contract FeeStorage is Ownable {
       uint256 balance = IERC20(token).balanceOf(address(this));
 
       // USDT approve doesn’t comply with the ERC20 standard
-      IERC20(token).approve(uniswapRouterAddress, balance);
+      IERC20(token).safeApprove(uniswapRouterAddress, balance);
 
       address[] memory path = new address[](2);
       path[0] = token;
