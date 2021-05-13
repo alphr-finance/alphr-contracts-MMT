@@ -2,7 +2,7 @@
 import { ethers, network } from 'hardhat';
 import { expect } from 'chai';
 import { utils } from 'ethers';
-import { ERC20, FeeStorage } from '../typechain';
+import { FeeStorage } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { IERC20 } from "../typechain/IERC20";
 import { UNISWAP_ROUTER_V2 } from "../constants/uniswap";
@@ -15,17 +15,17 @@ const uniAddress = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"
 const uniDecimals = 18
 const uniHolderAddress = "0x47173b170c64d16393a52e6c480b3ad8c302ba1e"
 
-const tokenAmout = "15"
-const defaultRecepientBalance = "10000"
+const tokenAmount = "15"
+const startingRecipientBalance = "10000"
 const etherToPayForTx = "100"
 
 describe('Fs-storage :: swap and send test suite', () => {
-    let owner, user, receipient: SignerWithAddress;
+    let owner, user, recipient: SignerWithAddress;
     let fs: FeeStorage;
     let dai, uni: IERC20;
 
     before('init signers', async () => {
-        [owner, user, receipient] = await ethers.getSigners();
+        [owner, user, recipient] = await ethers.getSigners();
     });
 
     before('deploy fee storage', async () => {
@@ -44,7 +44,7 @@ describe('Fs-storage :: swap and send test suite', () => {
 
         await owner.sendTransaction({ to: daiHolderAddress, value: utils.parseEther(etherToPayForTx) })
 
-        await dai.connect(daiHolder).transfer(fs.address, ethers.utils.parseUnits(tokenAmout, daiDecimals))
+        await dai.connect(daiHolder).transfer(fs.address, ethers.utils.parseUnits(tokenAmount, daiDecimals))
     });
 
     before('send 15 UNI to fee storage', async () => {
@@ -56,32 +56,32 @@ describe('Fs-storage :: swap and send test suite', () => {
 
         await owner.sendTransaction({ to: uniHolderAddress, value: utils.parseEther(etherToPayForTx) })
 
-        await uni.connect(uniHolder).transfer(fs.address, ethers.utils.parseUnits(tokenAmout, uniDecimals))
+        await uni.connect(uniHolder).transfer(fs.address, ethers.utils.parseUnits(tokenAmount, uniDecimals))
     });
 
     describe('check fs token balances', async () => {
         it('check balance of DAI in fs', async () => {
-            expect(await dai.balanceOf(fs.address)).to.be.eq(ethers.utils.parseUnits(tokenAmout, daiDecimals))
+            expect(await dai.balanceOf(fs.address)).to.be.eq(ethers.utils.parseUnits(tokenAmount, daiDecimals))
         });
 
         it('check balance of UNI in fs', async () => {
-            expect(await uni.balanceOf(fs.address)).to.be.eq(ethers.utils.parseUnits(tokenAmout, daiDecimals))
+            expect(await uni.balanceOf(fs.address)).to.be.eq(ethers.utils.parseUnits(tokenAmount, daiDecimals))
         });
     });
 
     describe('swap to ETH and send', async () => {
         it('swapToETHAndSend', async () => {
-            expect(await ethers.provider.getBalance(receipient.address)).to.be.eq(utils.parseEther(defaultRecepientBalance))
+            expect(await ethers.provider.getBalance(recipient.address)).to.be.eq(utils.parseEther(startingRecipientBalance))
 
-            await fs.connect(owner).swapToETHAndSend(receipient.address);
+            await fs.connect(owner).swapToETHAndSend(recipient.address);
 
             let expectedBalance = utils.parseEther("10000.151642693837014965");
-            expect(await ethers.provider.getBalance(receipient.address)).to.be.eq(expectedBalance)
+            expect(await ethers.provider.getBalance(recipient.address)).to.be.eq(expectedBalance)
 
         });
 
         it('swapToETHAndSend from another signer', async () => {
-            await expect(fs.connect(user).swapToETHAndSend(receipient.address)).to.be.revertedWith('revert Ownable: caller is not the owner')
+            await expect(fs.connect(user).swapToETHAndSend(recipient.address)).to.be.revertedWith('revert Ownable: caller is not the owner')
         });
     });
 
