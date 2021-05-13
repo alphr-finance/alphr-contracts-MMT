@@ -2,7 +2,7 @@
 import { ethers, network } from 'hardhat';
 import { expect } from 'chai';
 import { utils } from 'ethers';
-import { FeeStorage } from '../typechain';
+import { ERC20, FeeStorage } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { IERC20 } from "../typechain/IERC20";
 import { UNISWAP_ROUTER_V2 } from "../constants/uniswap";
@@ -22,6 +22,7 @@ const etherToPayForTx = "100"
 describe('Fs-storage :: swap and send test suite', () => {
     let owner, user, receipient: SignerWithAddress;
     let fs: FeeStorage;
+    let dai, uni: IERC20;
 
     before('init signers', async () => {
         [owner, user, receipient] = await ethers.getSigners();
@@ -36,7 +37,7 @@ describe('Fs-storage :: swap and send test suite', () => {
 
     before('send 15 DAI to fee storage', async () => {
         await fs.connect(owner).addTokenToBalanceList(daiAddress)
-        const dai = await ethers.getContractAt("IERC20", daiAddress) as IERC20
+        dai = await ethers.getContractAt("IERC20", daiAddress) as IERC20
 
         await network.provider.send("hardhat_impersonateAccount", [daiHolderAddress])
         const daiHolder = await ethers.provider.getSigner(daiHolderAddress)
@@ -48,7 +49,7 @@ describe('Fs-storage :: swap and send test suite', () => {
 
     before('send 15 UNI to fee storage', async () => {
         await fs.connect(owner).addTokenToBalanceList(uniAddress)
-        const uni = await ethers.getContractAt("IERC20", uniAddress) as IERC20
+        uni = await ethers.getContractAt("IERC20", uniAddress) as IERC20
 
         await network.provider.send("hardhat_impersonateAccount", [uniHolderAddress])
         const uniHolder = await ethers.provider.getSigner(uniHolderAddress)
@@ -58,13 +59,13 @@ describe('Fs-storage :: swap and send test suite', () => {
         await uni.connect(uniHolder).transfer(fs.address, ethers.utils.parseUnits(tokenAmout, uniDecimals))
     });
 
-    describe('balance', async () => {
+    describe('check fs token balances', async () => {
         it('check balance of DAI in fs', async () => {
-            expect(await fs.getBalanceOf(daiAddress)).to.be.eq(ethers.utils.parseUnits(tokenAmout, daiDecimals))
+            expect(await dai.balanceOf(fs.address)).to.be.eq(ethers.utils.parseUnits(tokenAmout, daiDecimals))
         });
 
         it('check balance of UNI in fs', async () => {
-            expect(await fs.getBalanceOf(uniAddress)).to.be.eq(ethers.utils.parseUnits(tokenAmout, uniDecimals))
+            expect(await uni.balanceOf(fs.address)).to.be.eq(ethers.utils.parseUnits(tokenAmout, daiDecimals))
         });
     });
 
