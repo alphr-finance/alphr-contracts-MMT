@@ -9,75 +9,69 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 contract FeeStorage is Ownable {
-    address private alphrTokenAddress;
-    address private uniswapRouterAddress;
-    EnumerableSet.AddressSet private tokens;
+  address private alphrTokenAddress;
+  address private uniswapRouterAddress;
+  EnumerableSet.AddressSet private tokens;
 
-    event SendETH(uint256, address);
+  event SendETH(uint256, address);
 
-    function swapToETHAndSend(address payable _to) external payable onlyOwner {
-        for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
-            address token = EnumerableSet.at(tokens, index - 1);
-            uint256 balance = IERC20(token).balanceOf(address(this));
+  function swapToETHAndSend(address payable _to) external payable onlyOwner {
+    for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
+      address token = EnumerableSet.at(tokens, index - 1);
+      uint256 balance = IERC20(token).balanceOf(address(this));
 
-            // USDT approve doesn’t comply with the ERC20 standard
-            IERC20(token).approve(uniswapRouterAddress, balance);
+      // USDT approve doesn’t comply with the ERC20 standard
+      IERC20(token).approve(uniswapRouterAddress, balance);
 
-            address[] memory path = new address[](2);
-            path[0] = token;
-            path[1] = IUniswapV2Router02(uniswapRouterAddress).WETH();
+      address[] memory path = new address[](2);
+      path[0] = token;
+      path[1] = IUniswapV2Router02(uniswapRouterAddress).WETH();
 
-            uint256[] memory amounts =
-                IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(
-                    balance,
-                    path
-                );
+      uint256[] memory amounts =
+        IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(balance, path);
 
-            uint256 amountOutMin = amounts[1];
-            IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
-                balance,
-                amountOutMin,
-                path,
-                address(this),
-                block.timestamp
-            );
-        }
-
-        _to.transfer(address(this).balance);
-        emit SendETH(address(this).balance, _to);
+      uint256 amountOutMin = amounts[1];
+      IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
+        balance,
+        amountOutMin,
+        path,
+        address(this),
+        block.timestamp
+      );
     }
 
-    function swapETHForAlphrAndBurn() external onlyOwner {}
+    _to.transfer(address(this).balance);
+    emit SendETH(address(this).balance, _to);
+  }
 
-    // Function to receive Ether. msg.data must be empty
-    receive() external payable {}
+  function swapETHForAlphrAndBurn() external onlyOwner {}
 
-    // Fallback function is called when msg.data is not empty
-    fallback() external payable {}
+  // Function to receive Ether. msg.data must be empty
+  receive() external payable {}
 
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
+  // Fallback function is called when msg.data is not empty
+  fallback() external payable {}
 
-    function setAlphrTokenAddress(address _alphrTokenAddress)
-        external
-        onlyOwner
-    {
-        alphrTokenAddress = _alphrTokenAddress;
-    }
+  function getBalance() public view returns (uint256) {
+    return address(this).balance;
+  }
 
-    function setUniswapRouterAddress(address _uniswapRouterAddress)
-        external
-        onlyOwner
-    {
-        uniswapRouterAddress = _uniswapRouterAddress;
-    }
+  function setAlphrTokenAddress(address _alphrTokenAddress) external onlyOwner {
+    alphrTokenAddress = _alphrTokenAddress;
+  }
 
-    function addTokenToBalanceList(address token) external onlyOwner {
-        EnumerableSet.add(tokens, token);
-    }
+  function setUniswapRouterAddress(address _uniswapRouterAddress)
+    external
+    onlyOwner
+  {
+    uniswapRouterAddress = _uniswapRouterAddress;
+  }
 
-    function getNumberOfTokens() external view onlyOwner returns (uint256) {
-        return EnumerableSet.length(tokens);
-    }
+  function addTokenToBalanceList(address token) external onlyOwner {
+    EnumerableSet.add(tokens, token);
+  }
+
+  function getNumberOfTokens() external view onlyOwner returns (uint256) {
+    return EnumerableSet.length(tokens);
+  }
 }
