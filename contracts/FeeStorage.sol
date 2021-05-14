@@ -13,21 +13,28 @@ contract FeeStorage is Ownable {
     address private uniswapRouterAddress;
     EnumerableSet.AddressSet private tokens;
 
-    function swapTokensForAlphrAndBurn() external onlyOwner {
+    event SendETH(uint256, address);
+
+    function swapToETHAndSend(address payable _to) external payable onlyOwner {
         for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
             address token = EnumerableSet.at(tokens, index - 1);
             uint256 balance = IERC20(token).balanceOf(address(this));
+
+            // USDT approve doesn’t comply with the ERC20 standard
             IERC20(token).approve(uniswapRouterAddress, balance);
+
             address[] memory path = new address[](2);
             path[0] = token;
-            path[1] = alphrTokenAddress;
+            path[1] = IUniswapV2Router02(uniswapRouterAddress).WETH();
+
             uint256[] memory amounts =
                 IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(
                     balance,
                     path
                 );
+
             uint256 amountOutMin = amounts[1];
-            IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForTokens(
+            IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
                 balance,
                 amountOutMin,
                 path,
@@ -36,9 +43,8 @@ contract FeeStorage is Ownable {
             );
         }
 
-        uint256 alphrBalance =
-            IERC20(alphrTokenAddress).balanceOf(address(this));
-        ERC20Burnable(alphrTokenAddress).burn(alphrBalance);
+        _to.transfer(address(this).balance);
+        emit SendETH(address(this).balance, _to);
     }
 
     function swapETHForAlphrAndBurn() external onlyOwner {}
