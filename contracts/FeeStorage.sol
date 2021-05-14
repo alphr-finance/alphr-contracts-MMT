@@ -6,8 +6,9 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
+import "./IWETH9.sol";
 
 contract FeeStorage is Ownable {
   using SafeERC20 for IERC20;
@@ -17,6 +18,7 @@ contract FeeStorage is Ownable {
   EnumerableSet.AddressSet private tokens;
 
   event SendETH(uint256, address);
+  event UnwrapWETH(uint256, address);
 
   function swapToETHAndSend(address payable _to) external payable onlyOwner {
     for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
@@ -25,6 +27,19 @@ contract FeeStorage is Ownable {
 
       // USDT approve doesn’t comply with the ERC20 standard
       IERC20(token).safeApprove(uniswapRouterAddress, balance);
+
+      // can not use swapExactTokensForETH if token is WETH
+      if (token == IUniswapV2Router02(uniswapRouterAddress).WETH()) {
+        // unwrap WETH
+        IWETH9(token).withdraw(IERC20(token).balanceOf(address(this)));
+        // transfer ETH to Fee Storage
+        IERC20(token).transfer(
+          address(this),
+          IERC20(token).balanceOf(address(this))
+        );
+
+        continue;
+      }
 
       address[] memory path = new address[](2);
       path[0] = token;
