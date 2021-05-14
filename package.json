@@ -67,7 +67,5 @@
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
-  "dependencies": {
-    "@uniswap/v3-periphery": "^1.0.0"
-  }
+  "dependencies": {}
 }
