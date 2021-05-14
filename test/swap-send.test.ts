@@ -15,6 +15,10 @@ const usdtAddress = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 const usdtDecimals = 6;
 const usdtHolderAddress = '0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503';
 
+const wethAddress = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+const wethDecimals = 18;
+const wethHolderAddress = '0x0f4ee9631f4be0a63756515141281a3e2b293bbe';
+
 const uniAddress = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984';
 const uniDecimals = 18;
 const uniHolderAddress = '0x47173b170c64d16393a52e6c480b3ad8c302ba1e';
@@ -26,7 +30,7 @@ const etherToPayForTx = '100';
 describe('Fs-storage :: swap and send test suite', () => {
   let owner, user, recipient: SignerWithAddress;
   let fs: FeeStorage;
-  let dai, usdt, uni: IERC20;
+  let dai, usdt, weth, uni: IERC20;
 
   before('init signers', async () => {
     [owner, user, recipient] = await ethers.getSigners();
@@ -77,6 +81,25 @@ describe('Fs-storage :: swap and send test suite', () => {
       .transfer(fs.address, ethers.utils.parseUnits(tokenAmount, usdtDecimals));
   });
 
+  before('send 15 WETH to fee storage', async () => {
+    await fs.connect(owner).addTokenToBalanceList(wethAddress);
+    weth = (await ethers.getContractAt('IERC20', wethAddress)) as IERC20;
+
+    await network.provider.send('hardhat_impersonateAccount', [
+      wethHolderAddress,
+    ]);
+    const wethHolder = await ethers.provider.getSigner(wethHolderAddress);
+
+    await owner.sendTransaction({
+      to: wethHolderAddress,
+      value: utils.parseEther(etherToPayForTx),
+    });
+
+    await weth
+      .connect(wethHolder)
+      .transfer(fs.address, ethers.utils.parseUnits(tokenAmount, wethDecimals));
+  });
+
   before('send 15 UNI to fee storage', async () => {
     await fs.connect(owner).addTokenToBalanceList(uniAddress);
     uni = (await ethers.getContractAt('IERC20', uniAddress)) as IERC20;
@@ -109,6 +132,12 @@ describe('Fs-storage :: swap and send test suite', () => {
       );
     });
 
+    it('check balance of WETH in fs', async () => {
+      expect(await weth.balanceOf(fs.address)).to.be.eq(
+        ethers.utils.parseUnits(tokenAmount, wethDecimals)
+      );
+    });
+
     it('check balance of UNI in fs', async () => {
       expect(await uni.balanceOf(fs.address)).to.be.eq(
         ethers.utils.parseUnits(tokenAmount, daiDecimals)
@@ -124,7 +153,7 @@ describe('Fs-storage :: swap and send test suite', () => {
 
       await fs.connect(owner).swapToETHAndSend(recipient.address);
 
-      let expectedBalance = utils.parseEther('10000.155130126222795759');
+      let expectedBalance = utils.parseEther('10015.155130126222795759');
       expect(await ethers.provider.getBalance(recipient.address)).to.be.eq(
         expectedBalance
       );
