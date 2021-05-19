@@ -24,7 +24,7 @@ const uniDecimals = 18;
 const uniHolderAddress = '0x47173b170c64d16393a52e6c480b3ad8c302ba1e';
 
 const tokenAmount = '15';
-const startingRecipientBalance = '10000';
+let startingRecipientBalance;
 const etherToPayForTx = '100';
 
 describe('Fs-storage :: swap and send test suite', () => {
@@ -34,6 +34,9 @@ describe('Fs-storage :: swap and send test suite', () => {
 
   before('init signers', async () => {
     [owner, user, recipient] = await ethers.getSigners();
+    startingRecipientBalance = await ethers.provider.getBalance(
+      recipient.address
+    );
   });
 
   before('deploy fee storage', async () => {
@@ -148,12 +151,13 @@ describe('Fs-storage :: swap and send test suite', () => {
   describe('swap to ETH and send', () => {
     it('swapToETHAndSend', async () => {
       expect(await ethers.provider.getBalance(recipient.address)).to.be.eq(
-        utils.parseEther(startingRecipientBalance)
+        startingRecipientBalance.toString()
       );
 
       await fs.connect(owner).swapToETHAndSend(recipient.address);
-
-      let expectedBalance = utils.parseEther('10015.155130126222795759');
+      let expectedBalance = utils
+        .parseEther('15.155130126222795759')
+        .add(startingRecipientBalance);
       expect(await ethers.provider.getBalance(recipient.address)).to.be.eq(
         expectedBalance
       );

@@ -99,7 +99,6 @@ describe('ManualTrade :: fee calculations test', () => {
       expect(actual).to.be.eq(expected);
     });
 
-    // todo unskip after `contracts/ManualTrade/ManualTrade.sol:71` fixed
     it('correct fee for 2.1 WETH', async () => {
       const amount = ethers.utils.parseUnits('2.1', WETHDecimals);
       const actualFeeAmount = await mt.calculateFee(

@@ -55,7 +55,6 @@ describe('ManualTrade :: deploy test suite', () => {
           forking: {
             jsonRpcUrl:
               'https://eth-mainnet.alchemyapi.io/v2/iHddcEw1BVe03s2BXSQx_r_BTDE-jDxB',
-            blockNumber: 12419631,
           },
         },
       ],
