@@ -32,7 +32,7 @@ yarn test
 
 ### start hardhat node
 
-    yarn hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/{alchemyapi-api-key} --fork-block-number {INT-block-number}
+    yarn hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/{alchemyapi-key} --fork-block-number {INT-block-number}
 
 ### deploy contracts
 
