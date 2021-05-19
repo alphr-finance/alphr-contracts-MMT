@@ -28,6 +28,16 @@ Test the project locally:
 yarn test
 ```
 
+## Local node 
+
+### start hardhat node
+
+    yarn hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/{alchemyapi-key} --fork-block-number {INT-block-number}
+
+### deploy contracts
+
+    yarn hardhat --network localhost mt:test:bootstrap
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 or later - see the [LICENSE](LICENSE) file for details
