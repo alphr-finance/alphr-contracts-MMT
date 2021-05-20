@@ -7,6 +7,9 @@ import { HardhatUserConfig } from 'hardhat/types';
 require('hardhat-log-remover');
 require('./tasks/index');
 
+const MNEMONIC = '';
+const URL = '';
+
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.4',
@@ -25,6 +28,12 @@ const config: HardhatUserConfig = {
           'https://eth-mainnet.alchemyapi.io/v2/iHddcEw1BVe03s2BXSQx_r_BTDE-jDxB',
         blockNumber: 12419631,
       },
+    },
+    rinkeby: {
+      accounts: {
+        mnemonic: MNEMONIC,
+      },
+      url: URL,
     },
   },
   mocha: {
