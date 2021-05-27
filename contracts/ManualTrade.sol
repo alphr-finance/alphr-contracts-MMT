@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.4;
+pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./FeeStorage.sol";
 
 contract ManualTrade is Ownable {
@@ -61,6 +61,7 @@ contract ManualTrade is Ownable {
 
     // step 4: send token to feeStorage
     ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
+    feeStorage.addTokenToBalanceList(tokenIn);
 
     // step 5: execute swap
     uniswap.swapExactTokensForTokens(
@@ -97,6 +98,7 @@ contract ManualTrade is Ownable {
 
     // step 4: send token to feeStorage
     ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
+    feeStorage.addTokenToBalanceList(tokenIn);
 
     // step 5: execute swap
     uniswap.swapExactTokensForETH(

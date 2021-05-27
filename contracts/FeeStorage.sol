@@ -1,24 +1,36 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.4;
+pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "./IWETH9.sol";
 
-contract FeeStorage is Ownable {
+contract FeeStorage is Ownable, AccessControl {
   using SafeERC20 for IERC20;
+  using EnumerableSet for EnumerableSet.AddressSet;
+
+  bytes32 public constant TOKEN_LIST_OPERATOR_ROLE =
+    keccak256("TOKEN_LIST_OPERATOR_ROLE");
 
   address private alphrTokenAddress;
   address private uniswapRouterAddress;
   EnumerableSet.AddressSet private tokens;
 
   event SendETH(uint256, address);
-  event UnwrapWETH(uint256, address);
+
+  // Function to receive Ether. msg.data must be empty
+  receive() external payable {}
+
+  // Fallback function is called when msg.data is not empty
+  fallback() external payable {}
+
+  function addTokenOperatorRole(address to) public onlyOwner {
+    _setupRole(TOKEN_LIST_OPERATOR_ROLE, to);
+  }
 
   function swapToETHAndSend(address payable _to) external payable onlyOwner {
     for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
@@ -62,14 +74,6 @@ contract FeeStorage is Ownable {
     emit SendETH(address(this).balance, _to);
   }
 
-  function swapETHForAlphrAndBurn() external onlyOwner {}
-
-  // Function to receive Ether. msg.data must be empty
-  receive() external payable {}
-
-  // Fallback function is called when msg.data is not empty
-  fallback() external payable {}
-
   function getBalance() public view returns (uint256) {
     return address(this).balance;
   }
@@ -85,11 +89,29 @@ contract FeeStorage is Ownable {
     uniswapRouterAddress = _uniswapRouterAddress;
   }
 
-  function addTokenToBalanceList(address token) external onlyOwner {
-    EnumerableSet.add(tokens, token);
+  function addTokenToBalanceList(address token) external {
+    require(
+      hasRole(TOKEN_LIST_OPERATOR_ROLE, msg.sender),
+      "Caller is not a token list operator"
+    );
+    tokens.add(token);
   }
 
   function getNumberOfTokens() external view onlyOwner returns (uint256) {
     return EnumerableSet.length(tokens);
+  }
+
+  /**
+   * @dev returns array of token addresses which are on balance of FeeStorage
+   */
+  function getAddressesOfTokens()
+    external
+    view
+    returns (address[] memory tokenAddresses)
+  {
+    tokenAddresses = new address[](tokens.length());
+    for (uint256 i = 0; i < tokens.length(); i++) {
+      tokenAddresses[i] = tokens.at(i);
+    }
   }
 }
