@@ -18,6 +18,7 @@ contract FeeStorage is Ownable, AccessControl {
 
   address private alphrTokenAddress;
   address private uniswapRouterAddress;
+  EnumerableSet.AddressSet private tokens;
 
   event SendETH(uint256, address);
 
