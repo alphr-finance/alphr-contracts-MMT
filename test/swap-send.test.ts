@@ -7,7 +7,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { IERC20 } from '../typechain/IERC20';
 import { UNISWAP_ROUTER_V2 } from '../constants/uniswap';
 
-const daiAddress = '0x6b175474e89094c44da98b954eedeac495271d0f';
+const daiAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
 const daiDecimals = 18;
 const daiHolderAddress = '0x47ac0fb4f2d84898e4d9e7b4dab3c24507a6d503';
 
@@ -44,6 +44,10 @@ describe('Fs-storage :: swap and send test suite', () => {
     fs = (await FeeStorage.connect(owner).deploy()) as FeeStorage;
     await fs.deployed();
     await fs.connect(owner).setUniswapRouterAddress(UNISWAP_ROUTER_V2);
+  });
+
+  before('add manual trade as token list operator', async () => {
+    await fs.addTokenOperatorRole(owner.address);
   });
 
   before('send 15 DAI to fee storage', async () => {
@@ -123,6 +127,12 @@ describe('Fs-storage :: swap and send test suite', () => {
   });
 
   describe('check fs token balances', () => {
+    it('has correct list of token address', async () => {
+      const actual = await fs.getAddressesOfTokens();
+      const expected = [daiAddress, usdtAddress, wethAddress, uniAddress];
+      expect(actual).to.be.deep.equal(expected);
+    });
+
     it('check balance of DAI in fs', async () => {
       expect(await dai.balanceOf(fs.address)).to.be.eq(
         ethers.utils.parseUnits(tokenAmount, daiDecimals)

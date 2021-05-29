@@ -47,6 +47,10 @@ describe('ManualTrade :: fee calculations test', () => {
     await mt.deployTransaction.wait();
   });
 
+  before('add manual trade as token list operator', async () => {
+    await fs.addTokenOperatorRole(mt.address);
+  });
+
   describe('WETH fee calculation', () => {
     it('correct fee for 1 WETH', async () => {
       const amount = ethers.utils.parseUnits('1', WETHDecimals);

@@ -43,6 +43,10 @@ describe('Fs-storage :: deploy test suite', () => {
     });
   });
 
+  before('add manual trade as token list operator', async () => {
+    await fs.addTokenOperatorRole(owner.address);
+  });
+
   before('deploy alphrToken mock and mint', async () => {
     const ERC20Mock = await ethers.getContractFactory('ERC20Mock');
     alphrToken = (await ERC20Mock.connect(owner).deploy(
@@ -75,7 +79,7 @@ describe('Fs-storage :: deploy test suite', () => {
     it('add tokenB', async () => {
       await expect(
         fs.connect(user).addTokenToBalanceList(tokenA.address)
-      ).to.be.revertedWith('revert Ownable: caller is not the owner');
+      ).to.be.revertedWith('revert Caller is not a token list operator');
     });
 
     it('check balance by non-owner', async () => {
@@ -98,7 +102,7 @@ describe('Fs-storage :: deploy test suite', () => {
       tokenB.transfer(fs.address, utils.parseEther('5'));
     });
 
-    before('set uniswap router addres and alphr token ', async () => {
+    before('set uniswap router address and alphr token ', async () => {
       uniswapMock = await deployMockContract(owner, UNI.abi);
       uniswapMock.mock.getAmountsOut.returns([0, utils.parseEther('2')]);
       uniswapMock.mock.swapExactTokensForTokens.returns([]);
