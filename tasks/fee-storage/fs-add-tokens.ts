@@ -24,6 +24,7 @@ export default task(
       });
 
       let fsContract = await hre.ethers.getContractAt('FeeStorage', fs);
+      await fsContract.connect(owner).setUniswapRouterAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D");
       await fsContract.connect(owner).addTokenOperatorRole(ownerAddress);
       await fsContract.connect(owner).addTokenToBalanceList(token);
       let tokenContract = await hre.ethers.getContractAt('IERC20', token);
