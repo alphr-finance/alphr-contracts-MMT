@@ -24,6 +24,7 @@ export default task(
       });
 
       let fsContract = await hre.ethers.getContractAt('FeeStorage', fs);
+      await fsContract.connect(owner).addTokenOperatorRole(ownerAddress);
       await fsContract.connect(owner).addTokenToBalanceList(token);
       let tokenContract = await hre.ethers.getContractAt('IERC20', token);
       await tokenContract.connect(tokenHolder).transfer(fs, hre.ethers.utils.parseUnits(amount, decimals));
