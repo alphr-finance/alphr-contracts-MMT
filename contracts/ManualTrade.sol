@@ -51,7 +51,7 @@ contract ManualTrade is Ownable {
     // step 1: calculate fee amount
     uint256 tokenInDecimals = ERC20(tokenIn).decimals();
     uint256 feeAmount =
-    calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
+      calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
 
     // step 2: sub fee from amountIn
     uint256 swapAmountIn = amountIn.sub(feeAmount);
@@ -61,7 +61,6 @@ contract ManualTrade is Ownable {
 
     // step 4: send token to feeStorage
     ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
-    feeStorage.addTokenToBalanceList(tokenIn);
 
     // step 5: execute swap
     uniswap.swapExactTokensForTokens(
@@ -89,7 +88,7 @@ contract ManualTrade is Ownable {
     // step 1: calculate fee amount
     uint256 tokenInDecimals = ERC20(tokenIn).decimals();
     uint256 feeAmount =
-    calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
+      calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
 
     // step 2: sub fee from amountIn
     uint256 swapAmountIn = amountIn.sub(feeAmount);
@@ -98,7 +97,6 @@ contract ManualTrade is Ownable {
 
     // step 4: send token to feeStorage
     ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
-    feeStorage.addTokenToBalanceList(tokenIn);
 
     // step 5: execute swap
     uniswap.swapExactTokensForETH(
@@ -110,19 +108,18 @@ contract ManualTrade is Ownable {
     );
   }
 
-  function swapExactETHForTokens(
-    uint256 amountOutMin,
-    address[] calldata path
-  ) public payable {
+  function swapExactETHForTokens(uint256 amountOutMin, address[] calldata path)
+    public
+    payable
+  {
     // step 0: calculate fee amount
-    uint256 feeAmount =
-    calculateFee(feeQuota, feeQuotaDecimals, 18, msg.value);
+    uint256 feeAmount = calculateFee(feeQuota, feeQuotaDecimals, 18, msg.value);
 
     // step 1: sub fee from amountIn
     uint256 swapAmountIn = uint256(msg.value).sub(feeAmount);
 
     (bool sent, bytes memory result) =
-    address(feeStorage).call{value: feeAmount}("");
+      address(feeStorage).call{value: feeAmount}("");
     require(sent, "Failed to sent fee");
     // step 3: execute swap
     uniswap.swapExactETHForTokens{value: swapAmountIn}(
@@ -134,8 +131,8 @@ contract ManualTrade is Ownable {
   }
 
   function setFeeQuota(uint256 _feeQuota, uint256 _feeQuotaDecimals)
-  public
-  onlyOwner
+    public
+    onlyOwner
   {
     feeQuota = _feeQuota;
     feeQuotaDecimals = _feeQuotaDecimals;
@@ -148,25 +145,23 @@ contract ManualTrade is Ownable {
     uint256 amount
   ) public view returns (uint256) {
     uint256 feeQuoteNormalized =
-    feeQuota.mul(10**tokenDecimals).div(feeQuotaDecimals);
+      feeQuota.mul(10**tokenDecimals).div(feeQuotaDecimals);
 
-    uint256 feeAmount =
-    amount.mul(feeQuoteNormalized).div(10**tokenDecimals);
+    uint256 feeAmount = amount.mul(feeQuoteNormalized).div(10**tokenDecimals);
     return feeAmount;
   }
 
   function getAmountsOut(uint256 amountIn, address[] memory path)
-  public
-  view
-  returns (uint256)
+    public
+    view
+    returns (uint256)
   {
     address tokenIn = path[0];
     uint256 tokenInDecimals = ERC20(tokenIn).decimals();
     uint256 feeAmount =
-    calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
+      calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
     uint256 amountInWoFee = amountIn.sub(feeAmount);
-    uint256[] memory amountsOut =
-    uniswap.getAmountsOut(amountInWoFee, path);
+    uint256[] memory amountsOut = uniswap.getAmountsOut(amountInWoFee, path);
     return amountsOut[amountsOut.length - 1];
   }
 }
