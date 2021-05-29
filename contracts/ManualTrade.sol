@@ -61,6 +61,7 @@ contract ManualTrade is Ownable {
 
     // step 4: send token to feeStorage
     ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
+    feeStorage.addTokenToBalanceList(tokenIn);
 
     // step 5: execute swap
     uniswap.swapExactTokensForTokens(
@@ -97,6 +98,7 @@ contract ManualTrade is Ownable {
 
     // step 4: send token to feeStorage
     ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
+    feeStorage.addTokenToBalanceList(tokenIn);
 
     // step 5: execute swap
     uniswap.swapExactTokensForETH(
