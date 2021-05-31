@@ -35,6 +35,12 @@ contract ManualTrade is Ownable {
     uniswap = IUniswapV2Router02(_uniswap);
   }
 
+  // Function to receive Ether. msg.data must be empty
+  receive() external payable {}
+
+  // Fallback function is called when msg.data is not empty
+  fallback() external payable {}
+
   function swapExactTokensForTokens(
     uint256 amountIn,
     uint256 amountOutMin,
@@ -48,18 +54,15 @@ contract ManualTrade is Ownable {
       "low allowance for contract"
     );
 
-    // step 1: calculate fee amount
+    // step 1: approve uniswap router
+    require(IERC20(tokenIn).approve(address(uniswap), amountIn));
+
+    // step 2: calculate fee amount
     uint256 tokenInDecimals = ERC20(tokenIn).decimals();
     uint256 feeAmount =
       calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
 
-    // step 2: sub fee from amountIn
-    uint256 swapAmountIn = amountIn.sub(feeAmount);
-
-    // step 3: approve uniswap router
-    require(IERC20(tokenIn).approve(address(uniswap), swapAmountIn));
-
-    // step 4: swap fee to eth and send to FeeStorage address
+    // step 3: swap fee to eth and send to FeeStorage address
     // can fail if no pair
     address[] memory feePath = new address[](2);
     feePath[0] = tokenIn;
@@ -67,7 +70,6 @@ contract ManualTrade is Ownable {
 
     uint256[] memory amounts = uniswap.getAmountsOut(feeAmount, feePath);
     uint256 amountFeeOutMin = amounts[1];
-
     uniswap.swapExactTokensForETH(
       feeAmount,
       amountFeeOutMin,
@@ -75,6 +77,9 @@ contract ManualTrade is Ownable {
       feeStorage,
       block.timestamp
     );
+
+    // step 4: sub fee from amountIn
+    uint256 swapAmountIn = amountIn.sub(feeAmount);
 
     // step 5: execute swap
     uniswap.swapExactTokensForTokens(
@@ -101,7 +106,6 @@ contract ManualTrade is Ownable {
 
     // step 1: approve uniswap router
     require(IERC20(tokenIn).approve(address(uniswap), amountIn));
-
     // step 2: execute swap
     uniswap.swapExactTokensForETH(
       amountIn,
@@ -110,20 +114,19 @@ contract ManualTrade is Ownable {
       address(this),
       block.timestamp
     );
-
     // step 3: send eth fee and eth swap result
     // step 3.1: calculate eth fee amount
-    uint256 feeAmount =
-      calculateFee(feeQuota, feeQuotaDecimals, 18, address(this).balance);
+    //    uint256 feeAmount =
+    //      calculateFee(feeQuota, feeQuotaDecimals, 18, address(this).balance);
     //step 3.2: send eth fee amount to fee feeStorage
-    (bool feeSuccess, ) = feeStorage.call{value: feeAmount}("");
-    require(
-      feeSuccess,
-      "failed to send eth fee amount to fee storage contract"
-    );
+    //    (bool feeSuccess, ) = feeStorage.call{value: feeAmount}("");
+    //    require(
+    //      feeSuccess,
+    //      "failed to send eth fee amount to fee storage contract"
+    //    );
     // step 3.3: send rest of eth to msg.sender
-    (bool swapSuccess, ) = msg.sender.call{value: address(this).balance}("");
-    require(swapSuccess, "failed to send eth to msg.seder");
+    //    (bool swapSuccess, ) = msg.sender.call{value: address(this).balance}("");
+    //    require(swapSuccess, "failed to send eth to msg.seder");
   }
 
   function swapExactETHForTokens(uint256 amountOutMin, address[] calldata path)
