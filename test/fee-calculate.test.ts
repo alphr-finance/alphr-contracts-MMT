@@ -231,7 +231,7 @@ describe('ManualTrade :: fee calculations test', () => {
     });
   });
 
-  describe('mt-test swap ERC20 for ETH token', () => {
+  describe.skip('mt-test swap ERC20 for ETH token', () => {
     let token: ERC20Mock;
 
     before('deploy ERC20 mock and mint', async () => {
@@ -267,7 +267,7 @@ describe('ManualTrade :: fee calculations test', () => {
     });
   });
 
-  describe('mt-test swap ERC20 for tokens', () => {
+  describe.skip('mt-test swap ERC20 for tokens', () => {
     let token, token1: ERC20Mock;
 
     before('deploy ERC20 mock and mint', async () => {

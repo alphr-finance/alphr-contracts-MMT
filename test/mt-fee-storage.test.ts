@@ -8,43 +8,33 @@ import {
   deployMockContract,
   MockContract,
 } from '@ethereum-waffle/mock-contract';
+import * as UNI from '../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json';
 
-const UNI = require('../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json');
-
-describe('Fs-storage :: deploy test suite', () => {
-  let owner, user, token1, token2: SignerWithAddress;
+describe('FeeStorage :: send test suite', () => {
+  let owner, user: SignerWithAddress;
   let fs: FeeStorage;
   let alphrToken: ERC20Mock;
   let uniswapMock: MockContract;
 
   before('init signers', async () => {
-    [owner, user, token1, token2] = await ethers.getSigners();
+    [owner, user] = await ethers.getSigners();
   });
 
-  async function getToken(token: SignerWithAddress) {
-    const Erc20Mock = await ethers.getContractFactory('ERC20Mock');
-    const t = (await Erc20Mock.connect(token).deploy(
-      'MockToken',
-      'MT'
-    )) as ERC20Mock;
-    await t.deployed();
-    return t;
-  }
 
-  before('deploy fee storage', async () => {
-    const FeeStorage = await ethers.getContractFactory('FeeStorage');
-    fs = (await FeeStorage.connect(owner).deploy()) as FeeStorage;
-    await fs.deployed();
-    await fs.deployTransaction.wait();
+  before('deploy fee storage contract', async () => {
+    fs = await ethers.getContractFactory('FeeStorage')
+        .then(feeStorageDeployFactory => feeStorageDeployFactory.connect(owner).deploy())
+        .then(contract => contract.deployed())
+        .then(deployedContract => deployedContract as FeeStorage);
 
+
+  });
+
+  before('add 100 eth to FeeStorage trade as token list operator', async () => {
     await owner.sendTransaction({
       to: fs.address,
       value: utils.parseEther('100'),
     });
-  });
-
-  before('add manual trade as token list operator', async () => {
-    await fs.addTokenOperatorRole(owner.address);
   });
 
   before('deploy alphrToken mock and mint', async () => {
@@ -60,34 +50,6 @@ describe('Fs-storage :: deploy test suite', () => {
   });
 
   describe('balance', () => {
-    it('check balance of fs', async () => {
-      expect(await fs.getBalance()).to.be.eq(utils.parseEther('100'));
-    });
-  });
-
-  describe('check token number in list', () => {
-    let tokenA: ERC20Mock;
-    before('deploy and mint token', async () => {
-      tokenA = await getToken(token1);
-    });
-
-    it('add tokenA', async () => {
-      await fs.connect(owner).addTokenToBalanceList(tokenA.address);
-      expect(await fs.connect(owner).getNumberOfTokens()).to.be.eq('1');
-    });
-
-    it('add tokenB', async () => {
-      await expect(
-        fs.connect(user).addTokenToBalanceList(tokenA.address)
-      ).to.be.revertedWith('revert Caller is not a token list operator');
-    });
-
-    it('check balance by non-owner', async () => {
-      await expect(fs.connect(user).getNumberOfTokens()).to.be.revertedWith(
-        'revert Ownable: caller is not the owner'
-      );
-    });
-  });
 
   describe('swap tokens and burn', () => {
     let tokenA, tokenB: ERC20Mock;
