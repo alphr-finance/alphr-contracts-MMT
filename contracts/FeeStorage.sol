@@ -63,10 +63,11 @@ contract FeeStorage is Ownable, AccessControl {
         block.timestamp
       );
     }
+  }
 
-    (bool success, ) = _to.call{value: address(this).balance}("");
-    require(success, "failed to send eth to msg.seder");
-    emit SendETH(address(this).balance, _to);
+  function sendToken(address token, address to) external onlyOwner {
+    uint256 balance = IERC20(token).balanceOf(address(this));
+    IERC20(token).safeTransfer(to, balance);
   }
 
   function send(address payable _to) external onlyOwner {

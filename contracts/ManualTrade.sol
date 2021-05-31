@@ -116,17 +116,17 @@ contract ManualTrade is Ownable {
     );
     // step 3: send eth fee and eth swap result
     // step 3.1: calculate eth fee amount
-    //    uint256 feeAmount =
-    //      calculateFee(feeQuota, feeQuotaDecimals, 18, address(this).balance);
+    uint256 feeAmount =
+      calculateFee(feeQuota, feeQuotaDecimals, 18, address(this).balance);
     //step 3.2: send eth fee amount to fee feeStorage
-    //    (bool feeSuccess, ) = feeStorage.call{value: feeAmount}("");
-    //    require(
-    //      feeSuccess,
-    //      "failed to send eth fee amount to fee storage contract"
-    //    );
+    (bool feeSuccess, ) = feeStorage.call{value: feeAmount}("");
+    require(
+      feeSuccess,
+      "failed to send eth fee amount to fee storage contract"
+    );
     // step 3.3: send rest of eth to msg.sender
-    //    (bool swapSuccess, ) = msg.sender.call{value: address(this).balance}("");
-    //    require(swapSuccess, "failed to send eth to msg.seder");
+    (bool swapSuccess, ) = msg.sender.call{value: address(this).balance}("");
+    require(swapSuccess, "failed to send eth to msg.seder");
   }
 
   function swapExactETHForTokens(uint256 amountOutMin, address[] calldata path)
