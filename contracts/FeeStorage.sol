@@ -84,7 +84,7 @@ contract FeeStorage is Ownable, AccessControl {
     uint vaultShare = amount.mul(25).div(100);
 
     (bool successVault, ) = payable(vaultAddress).call{value: vaultShare}("");
-    require(successVault, "failed to send eth to msg.seder");
+    require(successVault, "failed to send eth to vault address");
 
     (bool success, ) = _to.call{value: amount.sub(vaultShare)}("");
     require(success, "failed to send eth to msg.seder");
