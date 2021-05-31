@@ -20,7 +20,7 @@ contract ManualTrade is Ownable {
   uint256 private feeQuota;
   uint256 private feeQuotaDecimals;
 
-  FeeStorage private feeStorage;
+  address payable private feeStorage;
   IUniswapV2Router02 private uniswap;
 
   constructor(
@@ -31,7 +31,7 @@ contract ManualTrade is Ownable {
   ) public {
     feeQuota = _feeQuota;
     feeQuotaDecimals = _feeQuotaDecimals;
-    feeStorage = FeeStorage(_feeStorage);
+    feeStorage = _feeStorage;
     uniswap = IUniswapV2Router02(_uniswap);
   }
 
@@ -59,9 +59,22 @@ contract ManualTrade is Ownable {
     // step 3: approve uniswap router
     require(IERC20(tokenIn).approve(address(uniswap), swapAmountIn));
 
-    // step 4: send token to feeStorage
-    ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
-    feeStorage.addTokenToBalanceList(tokenIn);
+    // step 4: swap fee to eth and send to FeeStorage address
+    // can fail if no pair
+    address[] memory feePath = new address[](2);
+    feePath[0] = tokenIn;
+    feePath[1] = uniswap.WETH();
+
+    uint256[] memory amounts = uniswap.getAmountsOut(feeAmount, feePath);
+    uint256 amountFeeOutMin = amounts[1];
+
+    uniswap.swapExactTokensForETH(
+      feeAmount,
+      amountFeeOutMin,
+      feePath,
+      feeStorage,
+      block.timestamp
+    );
 
     // step 5: execute swap
     uniswap.swapExactTokensForTokens(
@@ -80,34 +93,37 @@ contract ManualTrade is Ownable {
   ) public {
     address tokenIn = path[0];
 
-    // step 0: transfer tokenIn from user to cotnracts balance
+    // step 0: transfer tokenIn from user to contract's balance
     require(
       ERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn),
       "low allowance for contract"
     );
 
-    // step 1: calculate fee amount
-    uint256 tokenInDecimals = ERC20(tokenIn).decimals();
-    uint256 feeAmount =
-      calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
+    // step 1: approve uniswap router
+    require(IERC20(tokenIn).approve(address(uniswap), amountIn));
 
-    // step 2: sub fee from amountIn
-    uint256 swapAmountIn = amountIn.sub(feeAmount);
-    // step 3: approve uniswap router
-    require(IERC20(tokenIn).approve(address(uniswap), swapAmountIn));
-
-    // step 4: send token to feeStorage
-    ERC20(tokenIn).transfer(address(feeStorage), feeAmount);
-    feeStorage.addTokenToBalanceList(tokenIn);
-
-    // step 5: execute swap
+    // step 2: execute swap
     uniswap.swapExactTokensForETH(
-      swapAmountIn,
+      amountIn,
       amountOutMin,
       path,
-      msg.sender,
+      address(this),
       block.timestamp
     );
+
+    // step 3: send eth fee and eth swap result
+    // step 3.1: calculate eth fee amount
+    uint256 feeAmount =
+      calculateFee(feeQuota, feeQuotaDecimals, 18, address(this).balance);
+    //step 3.2: send eth fee amount to fee feeStorage
+    (bool feeSuccess, ) = feeStorage.call{value: feeAmount}("");
+    require(
+      feeSuccess,
+      "failed to send eth fee amount to fee storage contract"
+    );
+    // step 3.3: send rest of eth to msg.sender
+    (bool swapSuccess, ) = msg.sender.call{value: address(this).balance}("");
+    require(swapSuccess, "failed to send eth to msg.seder");
   }
 
   function swapExactETHForTokens(uint256 amountOutMin, address[] calldata path)
@@ -120,8 +136,7 @@ contract ManualTrade is Ownable {
     // step 1: sub fee from amountIn
     uint256 swapAmountIn = uint256(msg.value).sub(feeAmount);
 
-    (bool sent, bytes memory result) =
-      address(feeStorage).call{value: feeAmount}("");
+    (bool sent, ) = address(feeStorage).call{value: feeAmount}("");
     require(sent, "Failed to sent fee");
     // step 3: execute swap
     uniswap.swapExactETHForTokens{value: swapAmountIn}(
@@ -141,15 +156,15 @@ contract ManualTrade is Ownable {
   }
 
   function calculateFee(
-    uint256 feeQuota,
-    uint256 feeQuotaDecimals,
-    uint256 tokenDecimals,
-    uint256 amount
-  ) public view returns (uint256) {
+    uint256 _feeQuota,
+    uint256 _feeQuotaDecimals,
+    uint256 _tokenDecimals,
+    uint256 _amount
+  ) public pure returns (uint256) {
     uint256 feeQuoteNormalized =
-      feeQuota.mul(10**tokenDecimals).div(feeQuotaDecimals);
+      _feeQuota.mul(10**_tokenDecimals).div(_feeQuotaDecimals);
 
-    uint256 feeAmount = amount.mul(feeQuoteNormalized).div(10**tokenDecimals);
+    uint256 feeAmount = _amount.mul(feeQuoteNormalized).div(10**_tokenDecimals);
     return feeAmount;
   }
 

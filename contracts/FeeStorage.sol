@@ -11,14 +11,12 @@ import "./IWETH9.sol";
 
 contract FeeStorage is Ownable, AccessControl {
   using SafeERC20 for IERC20;
-  using EnumerableSet for EnumerableSet.AddressSet;
 
   bytes32 public constant TOKEN_LIST_OPERATOR_ROLE =
     keccak256("TOKEN_LIST_OPERATOR_ROLE");
 
   address private alphrTokenAddress;
   address private uniswapRouterAddress;
-  EnumerableSet.AddressSet private tokens;
 
   event SendETH(uint256, address);
 
@@ -32,9 +30,12 @@ contract FeeStorage is Ownable, AccessControl {
     _setupRole(TOKEN_LIST_OPERATOR_ROLE, to);
   }
 
-  function swapToETHAndSend(address payable _to) external payable onlyOwner {
-    for (uint256 index = EnumerableSet.length(tokens); index > 0; index--) {
-      address token = EnumerableSet.at(tokens, index - 1);
+  function swapToETHAndSend(address[] memory tokens, address payable _to)
+    external
+    onlyOwner
+  {
+    for (uint256 index = 0; index < tokens.length; index++) {
+      address token = tokens[index];
       uint256 balance = IERC20(token).balanceOf(address(this));
 
       // USDT approve doesn’t comply with the ERC20 standard
@@ -74,6 +75,11 @@ contract FeeStorage is Ownable, AccessControl {
     emit SendETH(address(this).balance, _to);
   }
 
+  function send(address payable _to) external onlyOwner {
+    _to.transfer(address(this).balance);
+    emit SendETH(address(this).balance, _to);
+  }
+
   function getBalance() public view returns (uint256) {
     return address(this).balance;
   }
@@ -87,31 +93,5 @@ contract FeeStorage is Ownable, AccessControl {
     onlyOwner
   {
     uniswapRouterAddress = _uniswapRouterAddress;
-  }
-
-  function addTokenToBalanceList(address token) external {
-    require(
-      hasRole(TOKEN_LIST_OPERATOR_ROLE, msg.sender),
-      "Caller is not a token list operator"
-    );
-    tokens.add(token);
-  }
-
-  function getNumberOfTokens() external view onlyOwner returns (uint256) {
-    return EnumerableSet.length(tokens);
-  }
-
-  /**
-   * @dev returns array of token addresses which are on balance of FeeStorage
-   */
-  function getAddressesOfTokens()
-    external
-    view
-    returns (address[] memory tokenAddresses)
-  {
-    tokenAddresses = new address[](tokens.length());
-    for (uint256 i = 0; i < tokens.length(); i++) {
-      tokenAddresses[i] = tokens.at(i);
-    }
   }
 }
