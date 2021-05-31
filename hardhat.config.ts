@@ -22,9 +22,15 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       forking: {
-        url:
-          'https://eth-mainnet.alchemyapi.io/v2/iHddcEw1BVe03s2BXSQx_r_BTDE-jDxB',
-        blockNumber: 12419631,
+        url: 'https://eth-rinkeby.alchemyapi.io/v2/DrIn1-yF8pYUbrqLsKeWEywjEKb2KKJM',
+        // blockNumber: 12419631,
+      },
+    },
+    rinkeby: {
+      url: 'https://eth-rinkeby.alchemyapi.io/v2/DrIn1-yF8pYUbrqLsKeWEywjEKb2KKJM',
+      accounts: {
+        mnemonic:
+          'penalty sorry discover tissue curious wage purity monster mammal labor market lonely',
       },
     },
   },

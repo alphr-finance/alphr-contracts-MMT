@@ -47,10 +47,6 @@ describe('ManualTrade :: fee calculations test', () => {
     await mt.deployTransaction.wait();
   });
 
-  before('add manual trade as token list operator', async () => {
-    await fs.addTokenOperatorRole(mt.address);
-  });
-
   describe('WETH fee calculation', () => {
     it('correct fee for 1 WETH', async () => {
       const amount = ethers.utils.parseUnits('1', WETHDecimals);
@@ -231,7 +227,7 @@ describe('ManualTrade :: fee calculations test', () => {
     });
   });
 
-  describe('mt-test swap ERC20 for ETH token', () => {
+  describe.skip('mt-test swap ERC20 for ETH token', () => {
     let token: ERC20Mock;
 
     before('deploy ERC20 mock and mint', async () => {
@@ -260,51 +256,6 @@ describe('ManualTrade :: fee calculations test', () => {
           token.address,
           '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
         ]);
-
-      expect(await (await token.balanceOf(fs.address)).toString()).to.be.eq(
-        actualFeeAmount.toString()
-      );
-    });
-  });
-
-  describe('mt-test swap ERC20 for tokens', () => {
-    let token, token1: ERC20Mock;
-
-    before('deploy ERC20 mock and mint', async () => {
-      const Erc20Mock = await ethers.getContractFactory('ERC20Mock');
-      token = (await Erc20Mock.connect(deployer).deploy(
-        'MockToken',
-        'MT'
-      )) as ERC20Mock;
-      await token.deployed();
-      await token.connect(user).mint();
-
-      const Erc20Mock1 = await ethers.getContractFactory('ERC20Mock');
-      token1 = (await Erc20Mock1.connect(deployer).deploy(
-        'MockToken',
-        'MT'
-      )) as ERC20Mock;
-      await token1.deployed();
-      await token1.connect(user).mint();
-    });
-
-    it('mt-test swapExactTokensForETH', async () => {
-      const actualFeeAmount = await mt.calculateFee(
-        feeQuota,
-        feeQuotaDecimals,
-        WETHDecimals,
-        utils.parseEther('2')
-      );
-
-      uniswapMock.mock.swapExactTokensForTokens.returns([]);
-      await token.connect(user).approve(mt.address, utils.parseEther('2'));
-      await mt
-        .connect(user)
-        .swapExactTokensForTokens(
-          utils.parseEther('2'),
-          utils.parseEther('4'),
-          [token.address, token1.address]
-        );
 
       expect(await (await token.balanceOf(fs.address)).toString()).to.be.eq(
         actualFeeAmount.toString()
