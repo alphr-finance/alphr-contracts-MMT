@@ -46,10 +46,6 @@ describe.skip('Fs-storage :: swap and send test suite', () => {
     await fs.connect(owner).setUniswapRouterAddress(UNISWAP_ROUTER_V2);
   });
 
-  before('add manual trade as token list operator', async () => {
-    await fs.addTokenOperatorRole(owner.address);
-  });
-
   before('send 15 DAI to fee storage', async () => {
     dai = (await ethers.getContractAt('IERC20', daiAddress)) as IERC20;
 

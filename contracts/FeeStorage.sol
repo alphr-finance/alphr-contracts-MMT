@@ -12,9 +12,6 @@ import "./IWETH9.sol";
 contract FeeStorage is Ownable, AccessControl {
   using SafeERC20 for IERC20;
 
-  bytes32 public constant TOKEN_LIST_OPERATOR_ROLE =
-    keccak256("TOKEN_LIST_OPERATOR_ROLE");
-
   address private alphrTokenAddress;
   address private uniswapRouterAddress;
 
@@ -25,10 +22,6 @@ contract FeeStorage is Ownable, AccessControl {
 
   // Fallback function is called when msg.data is not empty
   fallback() external payable {}
-
-  function addTokenOperatorRole(address to) public onlyOwner {
-    _setupRole(TOKEN_LIST_OPERATOR_ROLE, to);
-  }
 
   function swapToETHAndSend(address[] memory tokens, address payable _to)
     external
