@@ -6,21 +6,23 @@ import { FeeStorage } from '../typechain';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 describe('FeeStorage.send :: unit test suite', () => {
-  let owner, user: SignerWithAddress;
+  const tokenAddress = '0xaa99199d1e9644b588796F3215089878440D58e0';
+  const uniswapRouterAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+  let owner, user, vault: SignerWithAddress;
   let fs: FeeStorage;
 
   before('init signers', async () => {
-    [owner, user] = await ethers.getSigners();
+    [owner, user, vault] = await ethers.getSigners();
   });
 
   before('deploy fee storage contract', async () => {
-    fs = await ethers
-      .getContractFactory('FeeStorage')
-      .then((feeStorageDeployFactory) =>
-        feeStorageDeployFactory.connect(owner).deploy()
-      )
-      .then((contract) => contract.deployed())
-      .then((deployedContract) => deployedContract as FeeStorage);
+    const FeeStorage = await ethers.getContractFactory('FeeStorage');
+    fs = (await FeeStorage.connect(owner).deploy(
+      tokenAddress,
+      uniswapRouterAddress,
+      vault.address
+    )) as FeeStorage;
+    await fs.deployed();
   });
 
   before(
@@ -34,11 +36,16 @@ describe('FeeStorage.send :: unit test suite', () => {
 
   it('sends ETH from fee storage to address', async () => {
     const userBalanceBefore = await ethers.provider.getBalance(user.address);
+    const vaultBalanceBefore = await ethers.provider.getBalance(vault.address);
     await fs.connect(owner).send(user.address);
     const userBalanceAfter = await ethers.provider.getBalance(user.address);
-    const actualDiff = userBalanceAfter.sub(userBalanceBefore);
-    const expectDiff = utils.parseEther('100');
-    expect(actualDiff).to.be.eq(expectDiff);
+    const vaultBalanceAfter = await ethers.provider.getBalance(vault.address);
+    const userDiff = userBalanceAfter.sub(userBalanceBefore);
+    const vaultDiff = vaultBalanceAfter.sub(vaultBalanceBefore);
+    const expectUserDiff = utils.parseEther('75');
+    const expectVaultDiff = utils.parseEther('25');
+    expect(userDiff).to.be.eq(expectUserDiff);
+    expect(vaultDiff).to.be.eq(expectVaultDiff);
   });
 
   after('reset node fork', async () => {

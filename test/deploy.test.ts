@@ -8,10 +8,12 @@ import { providers } from 'ethers';
 import { UNISWAP_ROUTER_V2 } from '../constants/uniswap';
 
 describe('ManualTrade :: deploy test suite', () => {
-  let deployer: SignerWithAddress;
+  const tokenAddress = '0xaa99199d1e9644b588796F3215089878440D58e0';
+  const uniswapRouterAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+  let deployer, user, vault: SignerWithAddress;
 
   before('init signers', async () => {
-    [deployer] = await ethers.getSigners();
+    [deployer, user, vault] = await ethers.getSigners();
   });
 
   let fs: FeeStorage;
@@ -19,7 +21,11 @@ describe('ManualTrade :: deploy test suite', () => {
 
   before('deploy fee storage', async () => {
     const FeeStorage = await ethers.getContractFactory('FeeStorage');
-    fs = (await FeeStorage.connect(deployer).deploy()) as FeeStorage;
+    fs = (await FeeStorage.connect(deployer).deploy(
+      tokenAddress,
+      uniswapRouterAddress,
+      vault.address
+    )) as FeeStorage;
     await fs.deployed();
     fsDeployTxr = await fs.deployTransaction.wait();
   });

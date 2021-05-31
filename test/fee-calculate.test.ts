@@ -12,14 +12,16 @@ import {
 const UNI = require('../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json');
 
 describe('ManualTrade :: fee calculations test', () => {
-  let deployer, user: SignerWithAddress;
+  const tokenAddress = '0xaa99199d1e9644b588796F3215089878440D58e0';
+  const uniswapRouterAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+  let deployer, user, vault: SignerWithAddress;
   const feeQuota = 20;
   const feeQuotaDecimals = 10000;
   const WETHDecimals = 18;
   const WBTCDecimals = 8;
 
   before('init signers', async () => {
-    [deployer, user] = await ethers.getSigners();
+    [deployer, user, vault] = await ethers.getSigners();
   });
 
   let fs: FeeStorage;
@@ -27,7 +29,11 @@ describe('ManualTrade :: fee calculations test', () => {
 
   before('deploy fee storage', async () => {
     const FeeStorage = await ethers.getContractFactory('FeeStorage');
-    fs = (await FeeStorage.connect(deployer).deploy()) as FeeStorage;
+    fs = (await FeeStorage.connect(deployer).deploy(
+      tokenAddress,
+      uniswapRouterAddress,
+      vault.address
+    )) as FeeStorage;
     await fs.deployed();
     await fs.deployTransaction.wait();
   });
