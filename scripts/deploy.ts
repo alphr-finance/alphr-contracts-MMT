@@ -13,14 +13,6 @@ async function main() {
     .then((market) => market.address);
   console.log('FeeStorage contract deployed: %s', feeStorage);
 
-  // send eth to feeStorage
-  const [user] = await ethers.getSigners();
-  await user.sendTransaction({
-    to: feeStorage,
-    value: ethers.utils.parseEther('5'),
-  });
-  console.log('FeeStorage had got 5 ETH');
-
   const feeQuota = 20;
   const feeQuotaDecimals = 10000;
   const manualTrade = await ethers
