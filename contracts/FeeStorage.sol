@@ -18,9 +18,11 @@ contract FeeStorage is Ownable, AccessControl {
   address private uniswapRouterAddress;
   address private vaultAddress;
 
-  event SendETH(uint256, address);
-
-  constructor(address _alphrToken, address _uniswapRouter, address _vault) public {
+  constructor(
+    address _alphrToken,
+    address _uniswapRouter,
+    address _vault
+  ) public {
     alphrTokenAddress = _alphrToken;
     uniswapRouterAddress = _uniswapRouter;
     vaultAddress = _vault;
@@ -72,6 +74,8 @@ contract FeeStorage is Ownable, AccessControl {
         block.timestamp
       );
     }
+
+    send(_to);
   }
 
   function sendToken(address token, address to) public onlyOwner {
@@ -80,16 +84,14 @@ contract FeeStorage is Ownable, AccessControl {
   }
 
   function send(address payable _to) public onlyOwner {
-    uint amount = address(this).balance;
-    uint vaultShare = amount.mul(25).div(100);
+    uint256 amount = address(this).balance;
+    uint256 vaultShare = amount.mul(25).div(100);
 
     (bool successVault, ) = payable(vaultAddress).call{value: vaultShare}("");
     require(successVault, "failed to send eth to vault address");
 
     (bool success, ) = _to.call{value: amount.sub(vaultShare)}("");
     require(success, "failed to send eth to msg.seder");
-
-    emit SendETH(address(this).balance, _to);
   }
 
   function getBalance() public view returns (uint256) {
