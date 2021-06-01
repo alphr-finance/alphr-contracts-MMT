@@ -73,7 +73,7 @@ contract FeeStorage is Ownable {
       );
     }
 
-    send(_to);
+    sendFeeETH(_to);
   }
 
   function sendToken(address token, address to) public onlyOwner {
@@ -81,7 +81,7 @@ contract FeeStorage is Ownable {
     IERC20(token).safeTransfer(to, balance);
   }
 
-  function send(address payable _to) public onlyOwner {
+  function sendFeeETH(address payable _to) public onlyOwner {
     uint256 amount = address(this).balance;
     uint256 vaultShare = amount.mul(25).div(100);
 
