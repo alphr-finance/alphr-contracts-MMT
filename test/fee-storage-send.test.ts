@@ -37,7 +37,7 @@ describe('FeeStorage.send :: unit test suite', () => {
   it('sends ETH from fee storage to address', async () => {
     const userBalanceBefore = await ethers.provider.getBalance(user.address);
     const vaultBalanceBefore = await ethers.provider.getBalance(vault.address);
-    await fs.connect(owner).send(user.address);
+    await fs.connect(owner).sendFeeETH(user.address);
     const userBalanceAfter = await ethers.provider.getBalance(user.address);
     const vaultBalanceAfter = await ethers.provider.getBalance(vault.address);
     const userDiff = userBalanceAfter.sub(userBalanceBefore);
