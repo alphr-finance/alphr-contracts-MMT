@@ -7,15 +7,26 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IWETH9.sol";
 
 contract FeeStorage is Ownable, AccessControl {
   using SafeERC20 for IERC20;
+  using SafeMath for uint256;
 
   address private alphrTokenAddress;
   address private uniswapRouterAddress;
+  address private vaultAddress;
 
-  event SendETH(uint256, address);
+  constructor(
+    address _alphrToken,
+    address _uniswapRouter,
+    address _vault
+  ) public {
+    alphrTokenAddress = _alphrToken;
+    uniswapRouterAddress = _uniswapRouter;
+    vaultAddress = _vault;
+  }
 
   // Function to receive Ether. msg.data must be empty
   receive() external payable {}
@@ -63,30 +74,40 @@ contract FeeStorage is Ownable, AccessControl {
         block.timestamp
       );
     }
+
+    send(_to);
   }
 
-  function sendToken(address token, address to) external onlyOwner {
+  function sendToken(address token, address to) public onlyOwner {
     uint256 balance = IERC20(token).balanceOf(address(this));
     IERC20(token).safeTransfer(to, balance);
   }
 
-  function send(address payable _to) external onlyOwner {
-    (bool success, ) = _to.call{value: address(this).balance}("");
-    require(success, "failed to send eth to msg.seder");
+  function send(address payable _to) public onlyOwner {
+    uint256 amount = address(this).balance;
+    uint256 vaultShare = amount.mul(25).div(100);
 
-    emit SendETH(address(this).balance, _to);
+    (bool successVault, ) = payable(vaultAddress).call{value: vaultShare}("");
+    require(successVault, "failed to send eth to vault address");
+
+    (bool success, ) = _to.call{value: amount.sub(vaultShare)}("");
+    require(success, "failed to send eth to msg.seder");
   }
 
   function getBalance() public view returns (uint256) {
     return address(this).balance;
   }
 
-  function setAlphrTokenAddress(address _alphrTokenAddress) external onlyOwner {
+  function setAlphrTokenAddress(address _alphrTokenAddress) public onlyOwner {
     alphrTokenAddress = _alphrTokenAddress;
   }
 
+  function setVaultAddress(address _vault) public onlyOwner {
+    vaultAddress = _vault;
+  }
+
   function setUniswapRouterAddress(address _uniswapRouterAddress)
-    external
+    public
     onlyOwner
   {
     uniswapRouterAddress = _uniswapRouterAddress;
