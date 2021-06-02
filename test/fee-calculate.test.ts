@@ -233,7 +233,7 @@ describe('ManualTrade :: fee calculations test', () => {
     });
   });
 
-  describe.skip('mt-test swap ERC20 for ETH token', () => {
+  describe('mt-test swap ERC20 for ETH token', () => {
     let token: ERC20Mock;
 
     before('deploy ERC20 mock and mint', async () => {
@@ -245,13 +245,20 @@ describe('ManualTrade :: fee calculations test', () => {
       await token.deployed();
       await token.connect(user).mint();
     });
+    before('send 5 ETH to FeeStorage', async () => {
+      await deployer.sendTransaction({
+        from: deployer.address,
+        to: mt.address,
+        value: utils.parseEther('5'),
+      });
+    });
 
     it('mt-test swapExactTokensForETH', async () => {
       const actualFeeAmount = await mt.calculateFee(
         feeQuota,
         feeQuotaDecimals,
         WETHDecimals,
-        utils.parseEther('2')
+        utils.parseEther('5')
       );
 
       uniswapMock.mock.swapExactTokensForETH.returns([]);
@@ -263,9 +270,8 @@ describe('ManualTrade :: fee calculations test', () => {
           '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
         ]);
 
-      expect(await (await token.balanceOf(fs.address)).toString()).to.be.eq(
-        actualFeeAmount.toString()
-      );
+      expect(await fs.getBalance()).to.be.eq(actualFeeAmount.toString());
+      expect(await token.balanceOf(mt.address)).to.be.eq(utils.parseEther('2'));
     });
   });
 
