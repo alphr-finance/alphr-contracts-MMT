@@ -30,12 +30,12 @@ const etherToPayForTx = '100';
 describe.skip('Fs-storage :: swap and send test suite', () => {
   const tokenAddress = '0xaa99199d1e9644b588796F3215089878440D58e0';
   const uniswapRouterAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
-  let owner, user, vault, recipient: SignerWithAddress;
+  let owner, vault, recipient: SignerWithAddress;
   let fs: FeeStorage;
   let dai, usdt, weth, uni: IERC20;
 
   before('init signers', async () => {
-    [owner, user, vault, recipient] = await ethers.getSigners();
+    [owner, vault, recipient] = await ethers.getSigners();
     startingRecipientBalance = await ethers.provider.getBalance(
       recipient.address
     );
