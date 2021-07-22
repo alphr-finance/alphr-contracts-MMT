@@ -16,6 +16,11 @@ contract FeeStorage is Ownable {
   address private uniswapRouterAddress;
   address private vaultAddress;
 
+  event NewTransferETH(
+    address indexed to,
+    uint256 value
+  );
+
   constructor(
     address _alphrToken,
     address _uniswapRouter,
@@ -32,9 +37,10 @@ contract FeeStorage is Ownable {
   // Fallback function is called when msg.data is not empty
   fallback() external payable {}
 
+  // swapToETHAndSend : DEPRECATED.
   function swapToETHAndSend(address[] memory tokens, address payable _to)
-    external
-    onlyOwner
+  external
+  onlyOwner
   {
     for (uint256 index = 0; index < tokens.length; index++) {
       address token = tokens[index];
@@ -61,7 +67,7 @@ contract FeeStorage is Ownable {
       path[1] = IUniswapV2Router02(uniswapRouterAddress).WETH();
 
       uint256[] memory amounts =
-        IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(balance, path);
+      IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(balance, path);
 
       uint256 amountOutMin = amounts[1];
       IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
@@ -84,12 +90,15 @@ contract FeeStorage is Ownable {
   function sendFeeETH(address payable _to) public onlyOwner {
     uint256 amount = address(this).balance;
     uint256 vaultShare = amount.mul(25).div(100);
+    uint256 recipientShare = amount.sub(vaultShare);
 
-    (bool successVault, ) = payable(vaultAddress).call{value: vaultShare}("");
+    (bool successVault,) = payable(vaultAddress).call{value : vaultShare}("");
     require(successVault, "failed to send eth to vault address");
+    emit NewTransferETH(vaultAddress, vaultShare);
 
-    (bool success, ) = _to.call{value: amount.sub(vaultShare)}("");
-    require(success, "failed to send eth to msg.seder");
+    (bool success,) = _to.call{value : recipientShare}("");
+    require(success, "failed to send eth to recipient");
+    emit NewTransferETH(to, recipientShare);
   }
 
   function getBalance() public view returns (uint256) {
@@ -105,8 +114,8 @@ contract FeeStorage is Ownable {
   }
 
   function setUniswapRouterAddress(address _uniswapRouterAddress)
-    public
-    onlyOwner
+  public
+  onlyOwner
   {
     uniswapRouterAddress = _uniswapRouterAddress;
   }
