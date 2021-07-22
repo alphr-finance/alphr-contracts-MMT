@@ -79,9 +79,9 @@ contract FeeStorage is Ownable {
     sendFeeETH(_to);
   }
 
-  function sendToken(address token, address to) public onlyOwner {
+  function sendToken(address token, address _to) public onlyOwner {
     uint256 balance = IERC20(token).balanceOf(address(this));
-    IERC20(token).safeTransfer(to, balance);
+    IERC20(token).safeTransfer(_to, balance);
   }
 
   function sendFeeETH(address payable _to) public onlyOwner {
@@ -95,7 +95,7 @@ contract FeeStorage is Ownable {
 
     (bool success,) = _to.call{value : recipientShare}("");
     require(success, "failed to send eth to recipient");
-    emit NewTransferETH(to, recipientShare);
+    emit NewTransferETH(_to, recipientShare);
   }
 
   function getBalance() public view returns (uint256) {
