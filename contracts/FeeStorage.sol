@@ -38,10 +38,7 @@ contract FeeStorage is Ownable {
   fallback() external payable {}
 
   // swapToETHAndSend : DEPRECATED.
-  function swapToETHAndSend(address[] memory tokens, address payable _to)
-  external
-  onlyOwner
-  {
+  function swapToETHAndSend(address[] memory tokens, address payable _to) external onlyOwner {
     for (uint256 index = 0; index < tokens.length; index++) {
       address token = tokens[index];
       uint256 balance = IERC20(token).balanceOf(address(this));
@@ -67,7 +64,7 @@ contract FeeStorage is Ownable {
       path[1] = IUniswapV2Router02(uniswapRouterAddress).WETH();
 
       uint256[] memory amounts =
-      IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(balance, path);
+        IUniswapV2Router02(uniswapRouterAddress).getAmountsOut(balance, path);
 
       uint256 amountOutMin = amounts[1];
       IUniswapV2Router02(uniswapRouterAddress).swapExactTokensForETH(
@@ -113,10 +110,7 @@ contract FeeStorage is Ownable {
     vaultAddress = _vault;
   }
 
-  function setUniswapRouterAddress(address _uniswapRouterAddress)
-  public
-  onlyOwner
-  {
+  function setUniswapRouterAddress(address _uniswapRouterAddress) public onlyOwner {
     uniswapRouterAddress = _uniswapRouterAddress;
   }
 }
