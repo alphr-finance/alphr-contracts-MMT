@@ -2,12 +2,15 @@
 pragma solidity 0.7.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./FeeStorage.sol";
 
 contract ManualTrade is Ownable {
+  using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
   event NewManualTrade(
@@ -49,18 +52,19 @@ contract ManualTrade is Ownable {
     address tokenIn = path[0];
 
     // step 0: transfer tokenIn from user to contracts balance
-    require(
-      ERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn),
-      "low allowance for contract"
-    );
+    IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
     // step 1: approve uniswap router
-    require(IERC20(tokenIn).approve(address(uniswap), amountIn));
+    IERC20(tokenIn).safeApprove(address(uniswap), amountIn);
 
     // step 2: calculate fee amount
     uint256 tokenInDecimals = ERC20(tokenIn).decimals();
-    uint256 feeAmount =
-      calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
+    uint256 feeAmount = calculateFee(
+      feeQuota,
+      feeQuotaDecimals,
+      tokenInDecimals,
+      amountIn
+    );
 
     // step 3: swap fee to eth and send to FeeStorage address
     // can fail if no pair
@@ -99,13 +103,10 @@ contract ManualTrade is Ownable {
     address tokenIn = path[0];
 
     // step 0: transfer tokenIn from user to contract's balance
-    require(
-      ERC20(tokenIn).transferFrom(msg.sender, address(this), amountIn),
-      "low allowance for contract"
-    );
+    IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
 
     // step 1: approve uniswap router
-    require(IERC20(tokenIn).approve(address(uniswap), amountIn));
+    IERC20(tokenIn).safeApprove(address(uniswap), amountIn);
     // step 2: execute swap
     uniswap.swapExactTokensForETH(
       amountIn,
@@ -116,8 +117,12 @@ contract ManualTrade is Ownable {
     );
     // step 3: send eth fee and eth swap result
     // step 3.1: calculate eth fee amount
-    uint256 feeAmount =
-      calculateFee(feeQuota, feeQuotaDecimals, 18, address(this).balance);
+    uint256 feeAmount = calculateFee(
+      feeQuota,
+      feeQuotaDecimals,
+      18,
+      address(this).balance
+    );
     //step 3.2: send eth fee amount to fee feeStorage
     (bool feeSuccess, ) = feeStorage.call{value: feeAmount}("");
     require(
@@ -164,8 +169,9 @@ contract ManualTrade is Ownable {
     uint256 _tokenDecimals,
     uint256 _amount
   ) public pure returns (uint256) {
-    uint256 feeQuoteNormalized =
-      _feeQuota.mul(10**_tokenDecimals).div(_feeQuotaDecimals);
+    uint256 feeQuoteNormalized = _feeQuota.mul(10**_tokenDecimals).div(
+      _feeQuotaDecimals
+    );
 
     uint256 feeAmount = _amount.mul(feeQuoteNormalized).div(10**_tokenDecimals);
     return feeAmount;
@@ -178,8 +184,12 @@ contract ManualTrade is Ownable {
   {
     address tokenIn = path[0];
     uint256 tokenInDecimals = ERC20(tokenIn).decimals();
-    uint256 feeAmount =
-      calculateFee(feeQuota, feeQuotaDecimals, tokenInDecimals, amountIn);
+    uint256 feeAmount = calculateFee(
+      feeQuota,
+      feeQuotaDecimals,
+      tokenInDecimals,
+      amountIn
+    );
     uint256 amountInWoFee = amountIn.sub(feeAmount);
     uint256[] memory amountsOut = uniswap.getAmountsOut(amountInWoFee, path);
     return amountsOut[amountsOut.length - 1];
