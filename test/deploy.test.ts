@@ -1,7 +1,6 @@
 // @ts-ignore
 import { ethers, network } from "hardhat";
 import { ManualTrade, FeeStorage } from "../typechain";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { TX_RECEIPT_OK } from "../constants/tx-receipt-status";
 import { providers } from "ethers";
@@ -10,10 +9,10 @@ import { UNISWAP_ROUTER_V2 } from "../constants/uniswap";
 describe("ManualTrade :: deploy test suite", () => {
   const tokenAddress = "0xaa99199d1e9644b588796F3215089878440D58e0";
   const uniswapRouterAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-  let deployer, user, vault: SignerWithAddress;
+  let deployer, vault;
 
   before("init signers", async () => {
-    [deployer, user, vault] = await ethers.getSigners();
+    [deployer, , vault] = await ethers.getSigners();
   });
 
   let fs: FeeStorage;
