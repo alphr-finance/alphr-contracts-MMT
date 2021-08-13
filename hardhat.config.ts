@@ -8,6 +8,9 @@ import { HardhatUserConfig } from 'hardhat/types';
 require('hardhat-log-remover');
 require('./tasks/index');
 
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.7.6',
@@ -32,6 +35,10 @@ const config: HardhatUserConfig = {
         mnemonic:
           'penalty sorry discover tissue curious wage purity monster mammal labor market lonely',
       },
+    },
+    kovan: {
+      url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: [process.env.PRIVATE_KEY],
     },
   },
   mocha: {
