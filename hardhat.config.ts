@@ -1,10 +1,14 @@
-import "@nomiclabs/hardhat-ethers";
+import "hardhat-deploy";
+import "hardhat-deploy-ethers";
 import "@nomiclabs/hardhat-waffle";
+import "@nomiclabs/hardhat-etherscan";
+// TS Support
 import "@typechain/hardhat";
+import "@nomiclabs/hardhat-ethers";
 import "hardhat-gas-reporter";
 //import "solidity-coverage"
 
-import { HardhatUserConfig } from "hardhat/types";
+import { HardhatUserConfig } from "hardhat/config";
 require("hardhat-log-remover");
 require("./tasks/index");
 
@@ -43,6 +47,13 @@ const config: HardhatUserConfig = {
   },
   mocha: {
     bail: true,
+  },
+  typechain: {
+    outDir: "typechain",
+    target: "ethers-v5",
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_KEY,
   },
 };
 export default config;
