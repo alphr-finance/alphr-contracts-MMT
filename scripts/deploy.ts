@@ -2,13 +2,13 @@
 import { ethers } from 'hardhat';
 import { UNISWAP_ROUTER_V2 } from '../constants/uniswap';
 import { ALPHR_TOKEN } from '../constants/tokens';
-import { ALPHR_VAULT } from '../constants/alphr';
+import { TECH_MULTISIG } from '../constants/alphr';
 
 async function main() {
   const feeStorage = await ethers
     .getContractFactory('FeeStorage')
     .then((deployFactory) =>
-      deployFactory.deploy(ALPHR_TOKEN, UNISWAP_ROUTER_V2, ALPHR_VAULT)
+      deployFactory.deploy(ALPHR_TOKEN, UNISWAP_ROUTER_V2, TECH_MULTISIG)
     )
     .then((market) => market.address);
   console.log('FeeStorage contract deployed: %s', feeStorage);

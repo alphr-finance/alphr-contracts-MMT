@@ -13,8 +13,23 @@ contract ManualTrade is Ownable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
-  event NewManualTrade(
+  event NewSwapExactTokensForTokens(
+    address indexed sender,
     address indexed tokenIn,
+    address indexed tokenOut,
+    uint256 amountIn,
+    uint256 amountOut
+  );
+
+  event NewSwapExactTokensForETH(
+    address indexed sender,
+    address indexed tokenIn,
+    uint256 amountIn,
+    uint256 amountOut
+  );
+
+  event NewSwapExactETHForTokens(
+    address indexed sender,
     address indexed tokenOut,
     uint256 amountIn,
     uint256 amountOut
@@ -50,6 +65,7 @@ contract ManualTrade is Ownable {
     address[] calldata path
   ) external {
     address tokenIn = path[0];
+    address tokenOut = path[1];
 
     // step 0: transfer tokenIn from user to contracts balance
     IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), amountIn);
@@ -89,6 +105,8 @@ contract ManualTrade is Ownable {
       msg.sender,
       block.timestamp
     );
+
+    emit NewSwapExactTokensForTokens(msg.sender, tokenIn, tokenOut, amountIn, amountOutMin);
   }
 
   function swapExactTokensForETH(
@@ -124,12 +142,14 @@ contract ManualTrade is Ownable {
     // step 3.3: send rest of eth to msg.sender
     (bool swapSuccess, ) = msg.sender.call{value: address(this).balance}("");
     require(swapSuccess, "failed to send eth to msg.seder");
+    emit NewSwapExactTokensForETH(msg.sender, tokenIn, amountIn, amountOutMin);
   }
 
   function swapExactETHForTokens(uint256 amountOutMin, address[] calldata path)
     external
     payable
   {
+    address tokenOut = path[path.length - 1];
     // step 0: calculate fee amount
     uint256 feeAmount = calculateFee(feeQuota, feeQuotaDecimals, 18, msg.value);
 
@@ -145,6 +165,8 @@ contract ManualTrade is Ownable {
       msg.sender,
       block.timestamp
     );
+
+    emit NewSwapExactETHForTokens(msg.sender, tokenOut, msg.value, amountOutMin);
   }
 
   function setFeeQuota(uint256 _feeQuota, uint256 _feeQuotaDecimals)
