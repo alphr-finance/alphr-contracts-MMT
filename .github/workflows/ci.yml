@@ -10,6 +10,7 @@ jobs:
       INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
       ETHERSCAN_KEY: ${{ secrets.ETHERSCAN_KEY }}
+      ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
     strategy:
       matrix:
         node-version: [14.x]
