@@ -6,6 +6,10 @@ jobs:
   pipelines:
     runs-on: ubuntu-latest
     environment: CI
+    env:
+      INFURA_API_KEY: ${{ secrets.INFURA_API_KEY }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      ETHERSCAN_KEY: ${{ secrets.ETHERSCAN_KEY }}
     strategy:
       matrix:
         node-version: [14.x]
